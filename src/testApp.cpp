@@ -1,7 +1,7 @@
 #include "testApp.h"
 
 void testApp::setup() {
-	player.loadMovie("ddarko-jetengine.mov");
+	player.loadMovie("looper-closed.mov");
 	player.play();
 	player.setPaused(true);
 	
@@ -71,14 +71,16 @@ void testApp::draw() {
 		}
 	}
 	
+	ofSetColor(255, 255, 255);
+	
 	preview.setFromPixels(frames[previewIndex], frameWidth, frameHeight, OF_IMAGE_COLOR);
-	preview.draw(0, 0, 960, 404);
+	preview.draw(0, 0, frameWidth/2, frameHeight/2);
 	
 	mask.setFromPixels(maskPixels, frameWidth, frameHeight, OF_IMAGE_GRAYSCALE);
-	mask.draw(960, 0, 960, 404);
+	mask.draw(frameWidth/2, 0, frameWidth/2, frameHeight/2);
 	
 	distorted.setFromPixels(distortedPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
-	distorted.draw(0, 404, 1920, 808);
+	distorted.draw(0, frameHeight/2, frameWidth, frameHeight);
 	
 	int shade = previewIndex / (float) frameCount * 255;
 	ofColor c(shade, shade, shade);
@@ -88,6 +90,15 @@ void testApp::draw() {
 	
 	ofSetColor(255, 255, 255);
 	ofDrawBitmapString(ss.str(), 10, 20);
+	
+	ofNoFill();
+	if (previewIndex < 128) {
+		ofSetColor(0, 0, 0);
+	}
+	else {
+		ofSetColor(255, 255, 255);
+	}
+	ofCircle(mouseX, mouseY, brushSize/2);
 }
 
 void testApp::exit() {
@@ -229,6 +240,11 @@ void testApp::keyReleased(int key) {
 			updatePreviewIndex(0);
 			break;
 			
+		case ' ':
+			brushColor = (float) previewIndex / frameCount * 0xff;
+			cout << "Brush color: " << brushColor << endl;
+			break;
+			
 		case OF_KEY_UP:
 			brushFlow = MIN(1, brushFlow + 0.005);
 			cout << "Brush flow: " << brushFlow << endl;
@@ -270,9 +286,9 @@ void testApp::keyReleased(int key) {
 }
 
 int testApp::screenToFrameX(int x, int y) {
-	if (y < 404) {
-		if (x < 960) return (float) x / 960 * 1920;
-		return (float) (x - 960) / 960 * 1920;
+	if (y < frameHeight/2) {
+		if (x < frameWidth/2) return (float) x * 2;
+		return (float) (x - frameWidth/2) * 2;
 	}
 	else {
 		return x;
@@ -280,8 +296,8 @@ int testApp::screenToFrameX(int x, int y) {
 }
 
 int testApp::screenToFrameY(int x, int y) {
-	if (y < 404) return (float) y / 404 * 808;
-	return y - 404;
+	if (y < frameHeight/2) return (float) y * 2;
+	return y - frameHeight/2;
 }
 
 void testApp::mouseMoved(int x, int y) {
