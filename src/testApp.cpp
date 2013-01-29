@@ -331,9 +331,6 @@ void testApp::mousePressed(int x, int y, int button) {
 
 void testApp::mouseReleased(int x, int y, int button) {
 	isPreviewDragging = false;
-	
-	cout << "Preview index: " << previewIndex << endl;
-	cout << "Brush color: " << brushColor << endl;
 }
 
 void testApp::windowResized(int w, int h) {
