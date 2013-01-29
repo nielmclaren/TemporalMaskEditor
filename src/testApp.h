@@ -17,6 +17,7 @@ public:
 	void writeDistorted();
 	
 	void updatePreviewIndex(int delta);
+	void setPreviewIndex(int i);
 	void updateBrush();
 	void addPoint(float x, float y, bool newStroke);
 	void addBrush(int x, int y);
@@ -48,6 +49,8 @@ public:
 	float brushSize;
 	float brushStep;
 	
+	int frameToBrushColor;
+	
 	float prevBrushX;
 	float prevBrushY;
 	float brushDeltaRemainder;
@@ -70,6 +73,8 @@ public:
 	int frameCount;
 	int frameWidth;
 	int frameHeight;
+	
+	bool isPreviewDragging;
 	
 	unsigned long keyDownTime;
 };

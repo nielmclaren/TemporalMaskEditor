@@ -13,16 +13,19 @@ void testApp::setup() {
 	frameWidth = player.width;
 	frameHeight = player.height;
 	
+	frameToBrushColor = 255 / frameCount;
+	
 	cout << "Loading frames..." << endl;
 	
 	int frameIndex = 0;
 	unsigned char* copyPixels;
+	unsigned char maxColor = (frameCount - 2) * frameToBrushColor;
 	for (int i = 0; i < frameCount; i++) {
 		cout << i << " of " << frameCount << endl;
 		copyPixels = player.getPixels();
 		unsigned char* framePixels = (unsigned char*) malloc(frameWidth * frameHeight * 3);
 		for (int i = 0; i < frameWidth * frameHeight * 3; i++) {
-			framePixels[i] = copyPixels[i];
+			framePixels[i] =  MIN(maxColor, copyPixels[i]);
 		}
 		frames.push_back(framePixels);
 		player.nextFrame();
@@ -42,6 +45,8 @@ void testApp::setup() {
 	
 	distorted.setFromPixels(frames[0], frameWidth, frameHeight, OF_IMAGE_COLOR);
 	
+	isPreviewDragging = false;
+	
 	cout << "setup complete." << endl;
 }
 
@@ -55,17 +60,13 @@ void testApp::update() {
 void testApp::draw() {
 	distortedPixels = distorted.getPixels();
 	
-	int range = frameCount - 2;
 	for (int x = 0; x < frameWidth; x++) {
 		for (int y = 0; y < frameHeight; y++) {
 			for (int c = 0; c < 3; c++) {
-				float maskFraction = maskPixels[y * frameWidth + x] / 255.0;
-				int frameIndex = maskFraction * range;
-				float remainder = (maskFraction * range - frameIndex) / range;
+				int frameIndex = maskPixels[y * frameWidth + x] / frameToBrushColor;
 				
 				int pixelIndex = y * frameWidth * 3 + x * 3 + c;
 				unsigned char* frame = frames[frameIndex];
-				unsigned char* nextFrame = frames[frameIndex + 1];
 				distortedPixels[pixelIndex] = frame[pixelIndex]; // * (remainder) + nextFrame[pixelIndex] * (1 - remainder);
 			}
 		}
@@ -91,14 +92,16 @@ void testApp::draw() {
 	ofSetColor(255, 255, 255);
 	ofDrawBitmapString(ss.str(), 10, 20);
 	
-	ofNoFill();
-	if (previewIndex < 128) {
-		ofSetColor(0, 0, 0);
+	if (mouseY > frameHeight/2) {
+		ofNoFill();
+		if (previewIndex < 128) {
+			ofSetColor(0, 0, 0);
+		}
+		else {
+			ofSetColor(255, 255, 255);
+		}
+		ofCircle(mouseX, mouseY, brushSize/2);
 	}
-	else {
-		ofSetColor(255, 255, 255);
-	}
-	ofCircle(mouseX, mouseY, brushSize/2);
 }
 
 void testApp::exit() {
@@ -128,7 +131,11 @@ void testApp::writeDistorted() {
 
 void testApp::updatePreviewIndex(int delta) {
 	previewIndexDelta = delta;
-	previewIndex += delta;
+	setPreviewIndex(previewIndex + delta);
+}
+
+void testApp::setPreviewIndex(int i) {
+	previewIndex = i;
 	
 	if (previewIndex < 0) {
 		previewIndex = 0;
@@ -136,6 +143,8 @@ void testApp::updatePreviewIndex(int delta) {
 	if (previewIndex >= frameCount) {
 		previewIndex = frameCount - 1;
 	}
+	
+	brushColor = previewIndex * frameToBrushColor;
 }
 
 void testApp::updateBrush() {
@@ -208,8 +217,9 @@ void testApp::addBrush(int tx, int ty) {
 		for (int x = tx; x < destX; x++) {
 			pix = x + y * frameWidth;
 			if (brushPixels[tPix] != 0) {
-				float value = brushPixels[tPix] / 255.0 * brushFlow;
-				maskPixels[pix] = maskPixels[pix] * (1 - value) + brushColor * value;
+				//float value = brushPixels[tPix] / 255.0 * brushFlow;
+				//maskPixels[pix] = maskPixels[pix] * (1 - value) + brushColor * value;
+				maskPixels[pix] = brushColor;
 			}
 			tPix++;
 		}
@@ -238,11 +248,6 @@ void testApp::keyReleased(int key) {
 		
 		case OF_KEY_LEFT:
 			updatePreviewIndex(0);
-			break;
-			
-		case ' ':
-			brushColor = (float) previewIndex / frameCount * 0xff;
-			cout << "Brush color: " << brushColor << endl;
 			break;
 			
 		case OF_KEY_UP:
@@ -304,18 +309,31 @@ void testApp::mouseMoved(int x, int y) {
 }
 
 void testApp::mouseDragged(int x, int y, int button) {
-	x = screenToFrameX(x, y);
-	y = screenToFrameY(x, y);
-	addPoint(x, y, false);
+	if (y < frameHeight/2) {
+		if (isPreviewDragging) {
+			setPreviewIndex((float) x / (frameWidth/2) * (frameCount - 2));
+		}
+	}
+	else {
+		addPoint(x, y - frameHeight/2, true);
+	}
 }
 
 void testApp::mousePressed(int x, int y, int button) {
-	x = screenToFrameX(x, y);
-	y = screenToFrameY(x, y);
-	addPoint(x, y, true);
+	if (y < frameHeight/2) {
+		setPreviewIndex((float) x / (frameWidth/2) * (frameCount - 2));
+		isPreviewDragging = true;
+	}
+	else {
+		addPoint(x, y - frameHeight/2, true);
+	}
 }
 
 void testApp::mouseReleased(int x, int y, int button) {
+	isPreviewDragging = false;
+	
+	cout << "Preview index: " << previewIndex << endl;
+	cout << "Brush color: " << brushColor << endl;
 }
 
 void testApp::windowResized(int w, int h) {
