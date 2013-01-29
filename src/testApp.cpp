@@ -14,18 +14,17 @@ void testApp::setup() {
 	frameHeight = player.height;
 	
 	frameToBrushColor = 255 / frameCount;
+	maxColor = (frameCount - 1) * frameToBrushColor;
 	
 	cout << "Loading frames..." << endl;
 	
-	int frameIndex = 0;
 	unsigned char* copyPixels;
-	unsigned char maxColor = (frameCount - 2) * frameToBrushColor;
 	for (int i = 0; i < frameCount; i++) {
 		cout << i << " of " << frameCount << endl;
 		copyPixels = player.getPixels();
 		unsigned char* framePixels = (unsigned char*) malloc(frameWidth * frameHeight * 3);
 		for (int i = 0; i < frameWidth * frameHeight * 3; i++) {
-			framePixels[i] =  MIN(maxColor, copyPixels[i]);
+			framePixels[i] = copyPixels[i];
 		}
 		frames.push_back(framePixels);
 		player.nextFrame();
@@ -34,8 +33,8 @@ void testApp::setup() {
 	brushImage.loadImage("brushes/001-soft.png");
 	brushImage.setImageType(OF_IMAGE_GRAYSCALE);
 	
-	brushColor = 0xff;
-	brushFlow = 0.04;
+	brushColor = maxColor;
+	brushFlow = 2;
 	brushSize = 50;
 	brushStep = 10;
 	
@@ -113,6 +112,11 @@ void testApp::exit() {
 void testApp::readMask() {
 	if (mask.loadImage("mask.jpg")) {
 		maskPixels = mask.getPixels();
+		
+		// Make sure mask values are within the expected range.
+		for (int i = 0; i < frameWidth * frameHeight * 3; i++) {
+			maskPixels[i] = MIN(maskPixels[i], maxColor);
+		}
 	}
 	else {
 		cout << "Warning: problem loading mask." << endl;
@@ -217,9 +221,10 @@ void testApp::addBrush(int tx, int ty) {
 		for (int x = tx; x < destX; x++) {
 			pix = x + y * frameWidth;
 			if (brushPixels[tPix] != 0) {
-				//float value = brushPixels[tPix] / 255.0 * brushFlow;
-				//maskPixels[pix] = maskPixels[pix] * (1 - value) + brushColor * value;
-				maskPixels[pix] = brushColor;
+				int delta = brushColor - maskPixels[pix];
+				if (delta != 0) {
+					maskPixels[pix] += delta / abs(delta) * MIN(brushFlow * brushPixels[tPix] / 255.0, abs(delta));
+				}
 			}
 			tPix++;
 		}
@@ -251,12 +256,12 @@ void testApp::keyReleased(int key) {
 			break;
 			
 		case OF_KEY_UP:
-			brushFlow = MIN(1, brushFlow + 0.005);
+			brushFlow = MIN(255, brushFlow + 0.5);
 			cout << "Brush flow: " << brushFlow << endl;
 			break;
 			
 		case OF_KEY_DOWN:
-			brushFlow = MAX(0, brushFlow - 0.005);
+			brushFlow = MAX(0, brushFlow - 0.5);
 			cout << "Brush flow: " << brushFlow << endl;
 			break;
 			
@@ -272,8 +277,12 @@ void testApp::keyReleased(int key) {
 			writeDistorted();
 			break;
 
+		case 'z':
+			setPreviewIndex(0);
+			break;
+			
 		case 'x':
-			brushColor = brushColor == 0xff ? 0 : 0xff;
+			setPreviewIndex(frameCount - 1);
 			break;
 			
 		case 'v':
@@ -305,7 +314,7 @@ void testApp::mouseDragged(int x, int y, int button) {
 }
 
 void testApp::mousePressed(int x, int y, int button) {
-	if (y < frameHeight/2) {
+	if (y < frameHeight/2 && x < frameWidth/2) {
 		setPreviewIndex((float) x / (frameWidth/2) * (frameCount - 2));
 		isPreviewDragging = true;
 	}

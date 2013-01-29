@@ -22,9 +22,6 @@ public:
 	void addPoint(float x, float y, bool newStroke);
 	void addBrush(int x, int y);
 	
-	int screenToFrameX(int x, int y);
-	int screenToFrameY(int x, int y);
-	
 	void keyPressed(int key);
 	void keyReleased(int key);
 	void mouseMoved(int x, int y);
@@ -50,6 +47,7 @@ public:
 	float brushStep;
 	
 	int frameToBrushColor;
+	int maxColor;
 	
 	float prevBrushX;
 	float prevBrushY;
