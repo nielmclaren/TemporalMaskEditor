@@ -6,6 +6,9 @@
          contextName = "testApp::draw:testApp.cpp">
          <PersistentStrings>
             <PersistentString
+               value = "maskPixelsDetail[y * frameWidth + x]">
+            </PersistentString>
+            <PersistentString
                value = "maxColor">
             </PersistentString>
             <PersistentString
