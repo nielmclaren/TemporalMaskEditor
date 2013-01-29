@@ -219,8 +219,6 @@ void testApp::addBrush(int tx, int ty) {
 					maskPixelsDetail[pix] += delta / abs(delta)
 						* MIN(brushFlow * brushPixels[tPix] / 255.0, abs(delta));
 					maskPixels[pix] = maskPixelsDetail[pix] / 255;
-					
-					assert(maskPixels[pix] <= 255);
 				}
 			}
 			tPix++;
