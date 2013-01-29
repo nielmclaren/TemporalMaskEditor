@@ -290,21 +290,6 @@ void testApp::keyReleased(int key) {
 	}
 }
 
-int testApp::screenToFrameX(int x, int y) {
-	if (y < frameHeight/2) {
-		if (x < frameWidth/2) return (float) x * 2;
-		return (float) (x - frameWidth/2) * 2;
-	}
-	else {
-		return x;
-	}
-}
-
-int testApp::screenToFrameY(int x, int y) {
-	if (y < frameHeight/2) return (float) y * 2;
-	return y - frameHeight/2;
-}
-
 void testApp::mouseMoved(int x, int y) {
 }
 
