@@ -7,14 +7,16 @@ void testApp::setup() {
 	
 	previewIndex = 0;
 	
-	readMask();
-	
 	frameCount = player.getTotalNumFrames();
 	frameWidth = player.width;
 	frameHeight = player.height;
 	
-	frameToBrushColor = 255 / frameCount;
+	frameToBrushColor = 255 * 255 / (frameCount - 1);
 	maxColor = (frameCount - 1) * frameToBrushColor;
+	
+	maskPixelsDetail = new unsigned short int[frameWidth * frameHeight];
+	
+	readMask();
 	
 	cout << "Loading frames..." << endl;
 	
@@ -22,7 +24,7 @@ void testApp::setup() {
 	for (int i = 0; i < frameCount; i++) {
 		cout << i << " of " << frameCount << endl;
 		copyPixels = player.getPixels();
-		unsigned char* framePixels = (unsigned char*) malloc(frameWidth * frameHeight * 3);
+		unsigned char* framePixels = new unsigned char[frameWidth * frameHeight * 3];
 		for (int i = 0; i < frameWidth * frameHeight * 3; i++) {
 			framePixels[i] = copyPixels[i];
 		}
@@ -34,7 +36,7 @@ void testApp::setup() {
 	brushImage.setImageType(OF_IMAGE_GRAYSCALE);
 	
 	brushColor = maxColor;
-	brushFlow = 2;
+	brushFlow = 255;
 	brushSize = 50;
 	brushStep = 10;
 	
@@ -61,12 +63,12 @@ void testApp::draw() {
 	
 	for (int x = 0; x < frameWidth; x++) {
 		for (int y = 0; y < frameHeight; y++) {
+			int frameIndex = maskPixelsDetail[y * frameWidth + x] / frameToBrushColor;
+			unsigned char* frame = frames[frameIndex];
+			
 			for (int c = 0; c < 3; c++) {
-				int frameIndex = maskPixels[y * frameWidth + x] / frameToBrushColor;
-				
 				int pixelIndex = y * frameWidth * 3 + x * 3 + c;
-				unsigned char* frame = frames[frameIndex];
-				distortedPixels[pixelIndex] = frame[pixelIndex]; // * (remainder) + nextFrame[pixelIndex] * (1 - remainder);
+				distortedPixels[pixelIndex] = frame[pixelIndex];
 			}
 		}
 	}
@@ -82,24 +84,13 @@ void testApp::draw() {
 	distorted.setFromPixels(distortedPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
 	distorted.draw(0, frameHeight/2, frameWidth, frameHeight);
 	
-	int shade = previewIndex / (float) frameCount * 255;
-	ofColor c(shade, shade, shade);
-	int hexColor = c.getHex();
-	stringstream ss;
-	ss << hex << hexColor;
-	
-	ofSetColor(255, 255, 255);
-	ofDrawBitmapString(ss.str(), 10, 20);
-	
 	if (mouseY > frameHeight/2) {
+		ofEnableAlphaBlending();
 		ofNoFill();
-		if (previewIndex < 128) {
-			ofSetColor(0, 0, 0);
-		}
-		else {
-			ofSetColor(255, 255, 255);
-		}
+		ofSetColor(255, 255, 255, 64);
+		ofSetLineWidth(2);
 		ofCircle(mouseX, mouseY, brushSize/2);
+		ofDisableAlphaBlending();
 	}
 }
 
@@ -107,6 +98,7 @@ void testApp::exit() {
 	for (int i = 0; i < frameCount; i++) {
 		delete[] frames[i];
 	}
+	delete[] maskPixelsDetail;
 }
 
 void testApp::readMask() {
@@ -114,8 +106,9 @@ void testApp::readMask() {
 		maskPixels = mask.getPixels();
 		
 		// Make sure mask values are within the expected range.
-		for (int i = 0; i < frameWidth * frameHeight * 3; i++) {
+		for (int i = 0; i < frameWidth * frameHeight; i++) {
 			maskPixels[i] = MIN(maskPixels[i], maxColor);
+			maskPixelsDetail[i] = maskPixels[i] * 255;
 		}
 	}
 	else {
@@ -221,9 +214,13 @@ void testApp::addBrush(int tx, int ty) {
 		for (int x = tx; x < destX; x++) {
 			pix = x + y * frameWidth;
 			if (brushPixels[tPix] != 0) {
-				int delta = brushColor - maskPixels[pix];
+				int delta = brushColor - maskPixelsDetail[pix];
 				if (delta != 0) {
-					maskPixels[pix] += delta / abs(delta) * MIN(brushFlow * brushPixels[tPix] / 255.0, abs(delta));
+					maskPixelsDetail[pix] += delta / abs(delta)
+						* MIN(brushFlow * brushPixels[tPix] / 255.0, abs(delta));
+					maskPixels[pix] = maskPixelsDetail[pix] / 255;
+					
+					assert(maskPixels[pix] <= 255);
 				}
 			}
 			tPix++;

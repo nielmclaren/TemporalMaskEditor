@@ -61,6 +61,7 @@ public:
 	ofImage preview;
 	
 	unsigned char* maskPixels;
+	unsigned short int* maskPixelsDetail;
 	ofImage mask;
 	
 	unsigned char* distortedPixels;
