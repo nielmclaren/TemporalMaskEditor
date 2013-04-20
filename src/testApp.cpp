@@ -1,7 +1,76 @@
 #include "testApp.h"
 
 void testApp::setup() {
-	player.loadMovie("looper-closed.mov");
+	brushImage.loadImage("brushes/001-soft.png");
+	brushImage.setImageType(OF_IMAGE_GRAYSCALE);
+	
+	brushColor = maxColor;
+	brushFlow = 128;
+	brushSize = 100;
+	brushStep = 10;
+	brushDeltaRemainder = 0;
+	
+	updateBrush();
+	
+	isPreviewDragging = false;
+}
+
+void testApp::update() {
+	if (frameWidth > 0) {
+		// Delay before playback
+		if (ofGetSystemTime() - keyDownTime > 400) {
+			updatePreviewIndex(previewIndexDelta);
+		}
+	}
+}
+
+void testApp::draw() {
+	ofBackground(0);
+	
+	if (frameWidth > 0) {
+		distortedPixels = distorted.getPixels();
+		
+		for (int x = 0; x < frameWidth; x++) {
+			for (int y = 0; y < frameHeight; y++) {
+				int frameIndex = maskPixelsDetail[y * frameWidth + x] / frameToBrushColor;
+				unsigned char* frame = frames[frameIndex];
+				
+				for (int c = 0; c < 3; c++) {
+					int pixelIndex = y * frameWidth * 3 + x * 3 + c;
+					distortedPixels[pixelIndex] = frame[pixelIndex];
+				}
+			}
+		}
+		
+		ofSetColor(255, 255, 255);
+		
+		preview.setFromPixels(frames[previewIndex], frameWidth, frameHeight, OF_IMAGE_COLOR);
+		preview.draw(0, 0, frameWidth/2, frameHeight/2);
+		
+		mask.setFromPixels(maskPixels, frameWidth, frameHeight, OF_IMAGE_GRAYSCALE);
+		mask.draw(frameWidth/2, 0, frameWidth/2, frameHeight/2);
+		
+		distorted.setFromPixels(distortedPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
+		distorted.draw(0, frameHeight/2, frameWidth, frameHeight);
+		
+		if (mouseY > frameHeight/2) {
+			ofEnableAlphaBlending();
+			ofNoFill();
+			ofSetColor(255, 255, 255, 64);
+			ofSetLineWidth(2);
+			ofCircle(mouseX, mouseY, brushSize/2);
+			ofCircle(frameWidth/2 + mouseX/2, (mouseY - frameHeight/2) / 2, brushSize/4);
+			ofDisableAlphaBlending();
+		}
+	}
+}
+
+void testApp::exit() {
+	clearFrames();
+}
+
+void testApp::readFrames(string filename) {
+	player.loadMovie(filename);
 	player.play();
 	player.setPaused(true);
 	
@@ -13,10 +82,6 @@ void testApp::setup() {
 	
 	frameToBrushColor = 255 * 255 / (frameCount - 1);
 	maxColor = (frameCount - 1) * frameToBrushColor;
-	
-	maskPixelsDetail = new unsigned short int[frameWidth * frameHeight];
-	
-	readMask();
 	
 	cout << "Loading frames..." << endl;
 	
@@ -32,77 +97,39 @@ void testApp::setup() {
 		player.nextFrame();
 	}
 	
-	brushImage.loadImage("brushes/001-soft.png");
-	brushImage.setImageType(OF_IMAGE_GRAYSCALE);
-	
-	brushColor = maxColor;
-	brushFlow = 255;
-	brushSize = 50;
-	brushStep = 10;
-	
-	updateBrush();
-	
-	brushDeltaRemainder = 0;
-	
 	distorted.setFromPixels(frames[0], frameWidth, frameHeight, OF_IMAGE_COLOR);
 	
-	isPreviewDragging = false;
+	// Reset mask.
+	maskPixels = new unsigned char[frameWidth * frameHeight];
+	maskPixelsDetail = new unsigned short int[frameWidth * frameHeight];
 	
-	cout << "setup complete." << endl;
-}
-
-void testApp::update() {
-	// Delay before playback
-	if (ofGetSystemTime() - keyDownTime > 400) {
-		updatePreviewIndex(previewIndexDelta);
+	for (int i = 0; i < frameWidth * frameHeight; i++) {
+		maskPixels[i] = 0;
+		maskPixelsDetail[i] = 0;
 	}
 }
 
-void testApp::draw() {
-	distortedPixels = distorted.getPixels();
-	
-	for (int x = 0; x < frameWidth; x++) {
-		for (int y = 0; y < frameHeight; y++) {
-			int frameIndex = maskPixelsDetail[y * frameWidth + x] / frameToBrushColor;
-			unsigned char* frame = frames[frameIndex];
-			
-			for (int c = 0; c < 3; c++) {
-				int pixelIndex = y * frameWidth * 3 + x * 3 + c;
-				distortedPixels[pixelIndex] = frame[pixelIndex];
-			}
-		}
-	}
-	
-	ofSetColor(255, 255, 255);
-	
-	preview.setFromPixels(frames[previewIndex], frameWidth, frameHeight, OF_IMAGE_COLOR);
-	preview.draw(0, 0, frameWidth/2, frameHeight/2);
-	
-	mask.setFromPixels(maskPixels, frameWidth, frameHeight, OF_IMAGE_GRAYSCALE);
-	mask.draw(frameWidth/2, 0, frameWidth/2, frameHeight/2);
-	
-	distorted.setFromPixels(distortedPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
-	distorted.draw(0, frameHeight/2, frameWidth, frameHeight);
-	
-	if (mouseY > frameHeight/2) {
-		ofEnableAlphaBlending();
-		ofNoFill();
-		ofSetColor(255, 255, 255, 64);
-		ofSetLineWidth(2);
-		ofCircle(mouseX, mouseY, brushSize/2);
-		ofDisableAlphaBlending();
-	}
-}
-
-void testApp::exit() {
+void testApp::clearFrames() {
 	for (int i = 0; i < frameCount; i++) {
 		delete[] frames[i];
 	}
+	delete[] maskPixels;
 	delete[] maskPixelsDetail;
+	
+	player.closeMovie();
+	
+	previewIndex = 0;
+	
+	frameCount = 0;
+	frameWidth = 0;
+	frameHeight = 0;
 }
 
 void testApp::readMask() {
 	if (mask.loadImage("mask.jpg")) {
+		delete[] maskPixels;
+		delete[] maskPixelsDetail;
+		
 		maskPixels = mask.getPixels();
 		
 		// Make sure mask values are within the expected range.
@@ -251,12 +278,12 @@ void testApp::keyReleased(int key) {
 			break;
 			
 		case OF_KEY_UP:
-			brushFlow = MIN(255, brushFlow + 0.5);
+			brushFlow = MIN(255 * 255, brushFlow + 1);
 			cout << "Brush flow: " << brushFlow << endl;
 			break;
 			
 		case OF_KEY_DOWN:
-			brushFlow = MAX(0, brushFlow - 0.5);
+			brushFlow = MAX(0, brushFlow - 1);
 			cout << "Brush flow: " << brushFlow << endl;
 			break;
 			
@@ -271,13 +298,9 @@ void testApp::keyReleased(int key) {
 		case 's':
 			writeDistorted();
 			break;
-
-		case 'z':
-			setPreviewIndex(0);
-			break;
 			
 		case 'x':
-			setPreviewIndex(frameCount - 1);
+			clearFrames();
 			break;
 			
 		case 'v':
@@ -327,6 +350,17 @@ void testApp::windowResized(int w, int h) {
 
 void testApp::gotMessage(ofMessage msg) {
 }
-
-void testApp::dragEvent(ofDragInfo dragInfo) { 
+void testApp::dragEvent(ofDragInfo dragInfo) {
+	for (int i = 0; i < dragInfo.files.size(); i++) {
+		string filename = dragInfo.files[i];
+		vector<string> tokens = ofSplitString(filename, ".");
+		string extension = tokens[tokens.size() - 1];
+		if (extension == "mov") {
+			clearFrames();
+			readFrames(filename);
+		}
+		else {
+			cout << "Unknown file type: " << extension << endl;
+		}
+	}
 }

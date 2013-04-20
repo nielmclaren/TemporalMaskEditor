@@ -12,6 +12,8 @@ public:
 	void draw();
 	void exit();
 	
+	void clearFrames();
+	void readFrames(string);
 	void readMask();
 	void writeMask();
 	void writeDistorted();
@@ -66,8 +68,6 @@ public:
 	
 	unsigned char* distortedPixels;
 	ofImage distorted;
-	
-	ofTexture texture;
 	
 	int frameCount;
 	int frameWidth;

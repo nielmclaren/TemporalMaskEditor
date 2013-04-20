@@ -3,20 +3,6 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "testApp::draw:testApp.cpp">
-         <PersistentStrings>
-            <PersistentString
-               value = "maskPixelsDetail[y * frameWidth + x]">
-            </PersistentString>
-            <PersistentString
-               value = "maxColor">
-            </PersistentString>
-            <PersistentString
-               value = "maskPixels[y * frameWidth + x]">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
          contextName = "testApp::addBrush:testApp.cpp">
          <PersistentStrings>
             <PersistentString
