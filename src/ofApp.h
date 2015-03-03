@@ -62,6 +62,7 @@ public:
   unsigned char* inputPixels;
   unsigned char* maskPixels;
   unsigned short int* maskPixelsDetail;
+  unsigned char* previewPixels;
   unsigned char* outputPixels;
 
   ofImage preview;

@@ -3,13 +3,16 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "testApp::addBrush:testApp.cpp">
+         contextName = "ofApp::loadFrames(std::string):ofApp.cpp">
          <PersistentStrings>
             <PersistentString
-               value = "brushPixels[tPix]">
+               value = "brushColor">
             </PersistentString>
             <PersistentString
-               value = "maskPixels[pix]">
+               value = "frameToBrushColor">
+            </PersistentString>
+            <PersistentString
+               value = "frameCount">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

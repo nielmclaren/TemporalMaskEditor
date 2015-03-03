@@ -48,10 +48,9 @@ void ofApp::draw() {
       }
     }
 
-    ofSetColor(255, 255, 255);
+    ofSetColor(255);
 
-    //preview.setFromPixels(frames[previewIndex], frameWidth, frameHeight, OF_IMAGE_COLOR);
-    //preview.draw(0, 0, frameWidth/2, frameHeight/2);
+    preview.draw(0, 0, frameWidth/2, frameHeight/2);
 
     mask.setFromPixels(maskPixels, frameWidth, frameHeight, OF_IMAGE_GRAYSCALE);
     mask.draw(frameWidth/2, 0, frameWidth/2, frameHeight/2);
@@ -135,14 +134,14 @@ void ofApp::loadFrames(string path) {
 
   maskPixels = new unsigned char[frameWidth * frameHeight * 1];
   maskPixelsDetail = new unsigned short int[frameWidth * frameHeight * 1];
+  previewPixels = new unsigned char[frameWidth * frameHeight * 3];
   outputPixels = new unsigned char[frameWidth * frameHeight * 3];
 
   clearMask();
 
-  previewIndex = 0;
-
   frameToBrushColor = 255 * 255 / (frameCount - 1);
-  maxColor = (frameCount - 1) * frameToBrushColor;
+  brushColor = maxColor = (frameCount - 1) * frameToBrushColor;
+  previewIndex = frameCount - 1;
 
   cout << "Loading complete." << endl;
 }
@@ -201,6 +200,12 @@ void ofApp::setPreviewIndex(int i) {
   }
 
   brushColor = previewIndex * frameToBrushColor;
+  for (int i = 0; i < frameWidth * frameHeight; i++) {
+    for (int c = 0; c < 3; c++) {
+      previewPixels[i * 3 + c] = inputPixels[previewIndex * frameWidth * frameHeight * 3 + i * 3 + c];
+    }
+  }
+  preview.setFromPixels(previewPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
 }
 
 void ofApp::updateBrush() {
@@ -275,8 +280,7 @@ void ofApp::addBrush(int tx, int ty) {
       if (brushPixels[tPix] != 0) {
         int delta = brushColor - maskPixelsDetail[pix];
         if (delta != 0) {
-          maskPixelsDetail[pix] += delta / abs(delta)
-            * MIN(brushFlow * brushPixels[tPix] / 255.0, abs(delta));
+          maskPixelsDetail[pix] += delta / abs(delta) * MIN(brushFlow * brushPixels[tPix] / 255.0, abs(delta));
           maskPixels[pix] = maskPixelsDetail[pix] / 255;
         }
       }
