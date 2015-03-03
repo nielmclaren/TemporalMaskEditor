@@ -7,14 +7,10 @@ void ofApp::setup() {
   screenWidth = ofGetWindowWidth();
   screenHeight = ofGetWindowHeight();
 
-  brushColor = maxColor;
-  brushFlow = 128;
-  brushSize = 100;
-  brushStep = 10;
+  brushColor = 0;
   brushDeltaRemainder = 0;
 
-  saveSettings();
-
+  loadSettings();
   updateBrush();
 
   isPreviewDragging = false;
@@ -24,7 +20,6 @@ void ofApp::setup() {
   maskPixelsDetail = NULL;
   outputPixels = NULL;
 
-  //loadFrames("falcon");
   loadFrames("adam_magyar_stainless01");
 }
 
@@ -77,12 +72,16 @@ void ofApp::exit() {
 void ofApp::loadSettings() {
   ofxXmlSettings settings;
   settings.loadFile("settings.xml");
-  //blurAmount = settings.getValue("settings:blurAmount", 3);
+  brushFlow = settings.getValue("settings:brushFlow", 128);
+  brushSize = settings.getValue("settings:brushSize", 100);
+  brushStep = settings.getValue("settings:brushStep", 10);
 }
 
 void ofApp::saveSettings() {
   ofxXmlSettings settings;
-  //settings.setValue("settings:blurAmount", blurAmount);
+  settings.setValue("settings:brushFlow", brushFlow);
+  settings.setValue("settings:brushSize", brushSize);
+  settings.setValue("settings:brushStep", brushStep);
   settings.saveFile("settings.xml");
 }
 
@@ -154,18 +153,9 @@ void ofApp::clearMask() {
 
 void ofApp::loadMask() {
   if (mask.loadImage("mask.png")) {
-    if (maskPixels != NULL) {
-      delete[] maskPixels;
-    }
-    if (maskPixels != NULL) {
-      delete[] maskPixelsDetail;
-    }
-
-    maskPixels = mask.getPixels();
-    maskPixelsDetail = new unsigned short int[mask.width * mask.height];
-
+    unsigned char* loadMaskPixels = mask.getPixels();
     for (int i = 0; i < frameWidth * frameHeight; i++) {
-      maskPixels[i] = MIN(maskPixels[i], maxColor);
+      maskPixels[i] = MIN(loadMaskPixels[i], maxColor);
       maskPixelsDetail[i] = maskPixels[i] * 255;
     }
   }
