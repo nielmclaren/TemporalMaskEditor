@@ -7,6 +7,10 @@ void ofApp::setup() {
   screenWidth = ofGetWindowWidth();
   screenHeight = ofGetWindowHeight();
 
+  frameWidth = 0;
+  frameHeight = 0;
+  frameCount = 0;
+
   brushColor = 0;
   brushDeltaRemainder = 0;
 
@@ -19,6 +23,13 @@ void ofApp::setup() {
   maskPixels = NULL;
   maskPixelsDetail = NULL;
   outputPixels = NULL;
+
+  gui.setup();
+  gui.add(brushFlow.setup("brush flow", 130, 10, 2000));
+  gui.add(brushSize.setup("brush size", 100, 10, 300));
+  gui.add(brushStep.setup("brush step", 10, 1, 20));
+
+  brushFlow.addListener(this, &ofApp::brushFlowChanged);
 
   loadFrames("adam_magyar_stainless01");
 }
@@ -63,6 +74,8 @@ void ofApp::draw() {
       ofDisableAlphaBlending();
     }
   }
+
+  gui.draw();
 }
 
 void ofApp::exit() {
@@ -337,13 +350,13 @@ void ofApp::keyReleased(int key) {
       break;
 
     case 'v':
-      brushSize += 5;
+      brushSize = brushSize + 5;
       cout << "Brush size: " << brushSize << endl;
       updateBrush();
       break;
 
     case 'c':
-      brushSize -= 5;
+      brushSize = brushSize - 5;
       cout << "Brush size: " << brushSize << endl;
       updateBrush();
       break;
@@ -385,4 +398,8 @@ void ofApp::gotMessage(ofMessage msg) {
 }
 
 void ofApp::dragEvent(ofDragInfo dragInfo) {
+}
+
+void ofApp::brushFlowChanged(float &brushFlow) {
+  cout << "changed" << endl;
 }

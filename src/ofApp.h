@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ofMain.h"
+#include "ofxGui.h"
 #include "ofxXmlSettings.h"
 
 class ofApp : public ofBaseApp {
@@ -37,6 +38,8 @@ public:
   void dragEvent(ofDragInfo dragInfo);
   void gotMessage(ofMessage msg);
 
+  void brushFlowChanged(float & brushFlow);
+
   // The base image for the brush.
   ofImage brushImage;
 
@@ -45,9 +48,11 @@ public:
   unsigned char* brushPixels;
 
   int brushColor;
-  float brushFlow;
-  float brushSize;
-  float brushStep;
+
+  ofxPanel gui;
+  ofxFloatSlider brushFlow;
+  ofxFloatSlider brushSize;
+  ofxFloatSlider brushStep;
 
   int frameToBrushColor;
   int maxColor;
