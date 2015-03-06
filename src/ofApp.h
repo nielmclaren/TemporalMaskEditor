@@ -44,6 +44,8 @@ public:
   void dragEvent(ofDragInfo dragInfo);
   void gotMessage(ofMessage msg);
 
+  void gradientIntensityChanged(float &value);
+
   int drawMode;
 
   // The base image for the brush.
@@ -61,6 +63,8 @@ public:
   ofxFloatSlider brushStep;
   ofxToggle brushButton;
   ofxToggle gradientButton;
+  ofxFloatSlider gradientStartIntensity;
+  ofxFloatSlider gradientEndIntensity;
 
   int frameToBrushColor;
   int maxColor;

@@ -34,6 +34,12 @@ void ofApp::setup() {
   gui.add(gradientButton.setup("gradient", true));
   drawMode = LINEAR_GRADIENT_DRAW_MODE;
 
+  gui.add(gradientStartIntensity.setup("gradient start", 0, 0, 65025));
+  gui.add(gradientEndIntensity.setup("gradient end", 65025, 0, 65025));
+
+  gradientStartIntensity.addListener(this, &ofApp::gradientIntensityChanged);
+  gradientEndIntensity.addListener(this, &ofApp::gradientIntensityChanged);
+
   loadFrames("adam_magyar_stainless01");
 
   gradientStartX = 100;
@@ -324,10 +330,14 @@ void ofApp::drawGradient() {
       w = u.dot(v) * v / v.length() / v.length();
 
       if (u.dot(v) < 0) {
-        maskPixelsDetail[i] = 0;
+        maskPixelsDetail[i] = gradientStartIntensity;
       }
       else {
-        maskPixelsDetail[i] = CLAMP(w.length() / d, 0, 1) * 255  *  255;
+        maskPixelsDetail[i] = ofMap(
+          w.length() / d,
+          0, 1,
+          gradientStartIntensity, gradientEndIntensity,
+          true);
       }
 
       maskPixels[i] = maskPixelsDetail[i] / 255;
@@ -469,3 +479,6 @@ void ofApp::gotMessage(ofMessage msg) {
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 }
 
+void ofApp::gradientIntensityChanged(float & value){
+  drawGradient();
+}
