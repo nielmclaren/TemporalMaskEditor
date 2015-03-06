@@ -4,6 +4,10 @@
 #include "ofxGui.h"
 #include "ofxXmlSettings.h"
 
+#define BRUSH_DRAW_MODE 0
+#define LINEAR_GRADIENT_DRAW_MODE 1
+#define RADIAL_GRADIENT_DRAW_MODE 2
+
 class ofApp : public ofBaseApp {
 public:
   void setup();
@@ -28,6 +32,8 @@ public:
   void addPoint(float x, float y, bool newStroke);
   void addBrush(int x, int y);
 
+  void drawGradient();
+
   void keyPressed(int key);
   void keyReleased(int key);
   void mouseMoved(int x, int y);
@@ -38,7 +44,7 @@ public:
   void dragEvent(ofDragInfo dragInfo);
   void gotMessage(ofMessage msg);
 
-  void brushFlowChanged(float & brushFlow);
+  int drawMode;
 
   // The base image for the brush.
   ofImage brushImage;
@@ -53,6 +59,8 @@ public:
   ofxFloatSlider brushFlow;
   ofxFloatSlider brushSize;
   ofxFloatSlider brushStep;
+  ofxToggle brushButton;
+  ofxToggle gradientButton;
 
   int frameToBrushColor;
   int maxColor;
@@ -60,6 +68,11 @@ public:
   float prevBrushX;
   float prevBrushY;
   float brushDeltaRemainder;
+
+  int gradientStartX;
+  int gradientStartY;
+  int gradientEndX;
+  int gradientEndY;
 
   int previewIndex;
   int previewIndexDelta;

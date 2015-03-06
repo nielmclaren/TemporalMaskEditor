@@ -29,9 +29,18 @@ void ofApp::setup() {
   gui.add(brushSize.setup("brush size", 100, 10, 300));
   gui.add(brushStep.setup("brush step", 10, 1, 20));
 
-  brushFlow.addListener(this, &ofApp::brushFlowChanged);
+  // TODO: Make these exclusive. There's a problem listening to toggle events.
+  gui.add(brushButton.setup("brush", false));
+  gui.add(gradientButton.setup("gradient", true));
+  drawMode = LINEAR_GRADIENT_DRAW_MODE;
 
   loadFrames("adam_magyar_stainless01");
+
+  gradientStartX = 100;
+  gradientStartY = 200;
+  gradientEndX = 500;
+  gradientEndY = 400;
+  drawGradient();
 }
 
 void ofApp::update() {
@@ -63,6 +72,13 @@ void ofApp::draw() {
 
     distorted.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
     distorted.draw(0, frameHeight/2, frameWidth, frameHeight);
+
+    ofFill();
+    ofSetColor(255, 0, 0, 64);
+    ofEnableAlphaBlending();
+    ofCircle(gradientStartX, frameHeight/2 + gradientStartY, 10);
+    ofCircle(gradientEndX, frameHeight/2 + gradientEndY, 10);
+    ofDisableAlphaBlending();
 
     if (mouseY > frameHeight/2) {
       ofEnableAlphaBlending();
@@ -293,6 +309,32 @@ void ofApp::addBrush(int tx, int ty) {
   }
 }
 
+void ofApp::drawGradient() {
+  ofVec2f start, end, u, v, w, curr;
+  start.set(gradientStartX, gradientStartY);
+  end.set(gradientEndX, gradientEndY);
+  v = end - start;
+  float d = v.length();
+
+  for (int x = 0; x < frameWidth; x++) {
+    for (int y = 0; y < frameHeight; y++) {
+      int i = y * frameWidth + x;
+      curr.set(x, y);
+      u = curr - start;
+      w = u.dot(v) * v / v.length() / v.length();
+
+      if (u.dot(v) < 0) {
+        maskPixelsDetail[i] = 0;
+      }
+      else {
+        maskPixelsDetail[i] = CLAMP(w.length() / d, 0, 1) * 255  *  255;
+      }
+
+      maskPixels[i] = maskPixelsDetail[i] / 255;
+    }
+  }
+}
+
 int ofApp::countFrames(string path) {
   int n = 0;
   ofFile file;
@@ -373,7 +415,15 @@ void ofApp::mouseDragged(int x, int y, int button) {
     }
   }
   else {
-    addPoint(x, y - frameHeight/2, true);
+    switch (drawMode) {
+      case BRUSH_DRAW_MODE:
+        addPoint(x, y - frameHeight/2, true);
+        break;
+      case LINEAR_GRADIENT_DRAW_MODE:
+        break;
+      case RADIAL_GRADIENT_DRAW_MODE:
+        break;
+    }
   }
 }
 
@@ -383,12 +433,31 @@ void ofApp::mousePressed(int x, int y, int button) {
     isPreviewDragging = true;
   }
   else {
-    addPoint(x, y - frameHeight/2, true);
+    switch (drawMode) {
+      case BRUSH_DRAW_MODE:
+        addPoint(x, y - frameHeight/2, true);
+        break;
+      case LINEAR_GRADIENT_DRAW_MODE:
+      case RADIAL_GRADIENT_DRAW_MODE:
+        gradientStartX = x;
+        gradientStartY = y - frameHeight/2;
+        break;
+    }
   }
 }
 
 void ofApp::mouseReleased(int x, int y, int button) {
   isPreviewDragging = false;
+  switch (drawMode) {
+    case BRUSH_DRAW_MODE:
+      break;
+    case LINEAR_GRADIENT_DRAW_MODE:
+    case RADIAL_GRADIENT_DRAW_MODE:
+      gradientEndX = x;
+      gradientEndY = y - frameHeight/2;
+      drawGradient();
+      break;
+  }
 }
 
 void ofApp::windowResized(int w, int h) {
@@ -400,6 +469,3 @@ void ofApp::gotMessage(ofMessage msg) {
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 }
 
-void ofApp::brushFlowChanged(float &brushFlow) {
-  cout << "changed" << endl;
-}
