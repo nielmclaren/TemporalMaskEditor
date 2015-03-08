@@ -1,9 +1,6 @@
 #include "ofApp.h"
 
 void ofApp::setup() {
-  brushImage.loadImage("brushes/001-soft.png");
-  brushImage.setImageType(OF_IMAGE_GRAYSCALE);
-
   screenWidth = ofGetWindowWidth();
   screenHeight = ofGetWindowHeight();
 
@@ -11,11 +8,7 @@ void ofApp::setup() {
   frameHeight = 0;
   frameCount = 0;
 
-  brushColor = 0;
-  brushDeltaRemainder = 0;
-
   loadSettings();
-  updateBrush();
 
   inputPixels = NULL;
   maskPixels = NULL;
@@ -23,15 +16,6 @@ void ofApp::setup() {
   outputPixels = NULL;
 
   gui.setup();
-  gui.add(brushFlow.setup("brush flow", 130, 10, 2000));
-  gui.add(brushSize.setup("brush size", 100, 10, 300));
-  gui.add(brushStep.setup("brush step", 10, 1, 20));
-
-  // TODO: Make these exclusive. There's a problem listening to toggle events.
-  gui.add(brushButton.setup("brush", false));
-  gui.add(gradientButton.setup("gradient", true));
-  drawMode = LINEAR_GRADIENT_DRAW_MODE;
-
   gui.add(gradientStartIntensity.setup("gradient start", 0, 0, 65025));
   gui.add(gradientEndIntensity.setup("gradient end", 65025, 0, 65025));
 
@@ -75,16 +59,6 @@ void ofApp::draw() {
     ofCircle(gradientStartX, frameHeight/2 + gradientStartY, 10);
     ofCircle(gradientEndX, frameHeight/2 + gradientEndY, 10);
     ofDisableAlphaBlending();
-
-    if (mouseY > frameHeight/2) {
-      ofEnableAlphaBlending();
-      ofNoFill();
-      ofSetColor(255, 255, 255, 64);
-      ofSetLineWidth(2);
-      ofCircle(mouseX, mouseY, brushSize/2);
-      ofCircle(frameWidth/2 + mouseX/2, (mouseY - frameHeight/2) / 2, brushSize/4);
-      ofDisableAlphaBlending();
-    }
   }
 
   gui.draw();
@@ -97,16 +71,10 @@ void ofApp::exit() {
 void ofApp::loadSettings() {
   ofxXmlSettings settings;
   settings.loadFile("settings.xml");
-  brushFlow = settings.getValue("settings:brushFlow", 128);
-  brushSize = settings.getValue("settings:brushSize", 100);
-  brushStep = settings.getValue("settings:brushStep", 10);
 }
 
 void ofApp::saveSettings() {
   ofxXmlSettings settings;
-  settings.setValue("settings:brushFlow", brushFlow);
-  settings.setValue("settings:brushSize", brushSize);
-  settings.setValue("settings:brushStep", brushStep);
   settings.saveFile("settings.xml");
 }
 
@@ -126,7 +94,6 @@ void ofApp::clearFrames() {
   frameHeight = 0;
 
   frameToBrushColor = 0;
-  maxColor = 0;
 }
 
 void ofApp::loadFrames(string path) {
@@ -161,7 +128,6 @@ void ofApp::loadFrames(string path) {
   clearMask();
 
   frameToBrushColor = 255 * 255 / (frameCount - 1);
-  brushColor = maxColor = (frameCount - 1) * frameToBrushColor;
 
   cout << "Loading complete." << endl;
 }
@@ -174,6 +140,7 @@ void ofApp::clearMask() {
 
 void ofApp::loadMask() {
   if (mask.loadImage("mask.png")) {
+    float maxColor = (frameCount - 1) * frameToBrushColor;
     unsigned char* loadMaskPixels = mask.getPixels();
     for (int i = 0; i < frameWidth * frameHeight; i++) {
       maskPixels[i] = MIN(loadMaskPixels[i], maxColor);
@@ -193,88 +160,6 @@ void ofApp::saveMask() {
 void ofApp::saveDistorted() {
   distorted.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
   distorted.saveImage("render.jpg", OF_IMAGE_QUALITY_BEST);
-}
-
-void ofApp::updateBrush() {
-  brush.clone(brushImage);
-  brush.setImageType(OF_IMAGE_GRAYSCALE);
-  brush.resize(brushSize, brushSize);
-  brushPixels = brush.getPixels();
-}
-
-void ofApp::addPoint(float startX, float startY, bool newStroke) {
-  if (newStroke) {
-    // Only draw one brush stroke.
-    addBrush(startX - brush.width/2, startY - brush.width/2);
-
-    brushDeltaRemainder = brushStep;
-  }
-  else {
-    float deltaX = (float) (startX - prevBrushX);
-    float deltaY = (float) (startY - prevBrushY);
-    float delta = sqrt(deltaX * deltaX + deltaY * deltaY);
-
-    int d;
-    for (d = brushDeltaRemainder; d < delta; d += brushStep) {
-      addBrush(
-           prevBrushX + d * deltaX / delta - brush.width/2,
-           prevBrushY + d * deltaY / delta - brush.height/2);
-    }
-
-    brushDeltaRemainder = d - delta;
-  }
-
-  prevBrushX = startX;
-  prevBrushY = startY;
-}
-
-void ofApp::addBrush(int tx, int ty) {
-  int pix = 0;
-
-  // This is what we use to move through the brushNumber array
-  int tPix = 0;
-
-  int destX = brush.width  + tx;
-  int destY = brush.height + ty;
-
-  // Lets check that we don't draw out outside the projected image
-  if (destX >= frameWidth) destX = frameWidth - 1;
-  if (destY >= frameHeight) destY = frameHeight - 1;
-
-  // If the brushNumber is a bit off the screen on the left side
-  // we need to figure this amount out so we only copy part
-  // of the brushNumber image
-  int offSetCorrectionLeft = 0;
-  if (tx < 0) {
-    offSetCorrectionLeft = -tx;
-    tx = 0;
-  }
-
-  // Same here for y - we need to figure out the y offset
-  // for the cropped brush
-  if (ty < 0) {
-    tPix = -ty * brush.width;
-    ty = 0;
-  }
-
-  // This is for the right hand side cropped brush
-  int offSetCorrectionRight = brush.width + tx - destX;
-  tPix += offSetCorrectionLeft;
-
-  for (int y = ty; y < destY; y++) {
-    for (int x = tx; x < destX; x++) {
-      pix = x + y * frameWidth;
-      if (brushPixels[tPix] != 0) {
-        int delta = brushColor - maskPixelsDetail[pix];
-        if (delta != 0) {
-          maskPixelsDetail[pix] += delta / abs(delta) * MIN(brushFlow * brushPixels[tPix] / 255.0, abs(delta));
-          maskPixels[pix] = maskPixelsDetail[pix] / 255;
-        }
-      }
-      tPix++;
-    }
-    tPix += offSetCorrectionRight;
-  }
 }
 
 void ofApp::drawGradient() {
@@ -319,16 +204,6 @@ void ofApp::keyPressed(int key) {
 
 void ofApp::keyReleased(int key) {
   switch (key) {
-    case OF_KEY_UP:
-      brushFlow = MIN(255 * 255, brushFlow + 1);
-      cout << "Brush flow: " << brushFlow << endl;
-      break;
-
-    case OF_KEY_DOWN:
-      brushFlow = MAX(0, brushFlow - 1);
-      cout << "Brush flow: " << brushFlow << endl;
-      break;
-
     case 'r':
       loadMask();
       break;
@@ -344,18 +219,6 @@ void ofApp::keyReleased(int key) {
     case 'x':
       clearFrames();
       break;
-
-    case 'v':
-      brushSize = brushSize + 5;
-      cout << "Brush size: " << brushSize << endl;
-      updateBrush();
-      break;
-
-    case 'c':
-      brushSize = brushSize - 5;
-      cout << "Brush size: " << brushSize << endl;
-      updateBrush();
-      break;
   }
 }
 
@@ -363,45 +226,19 @@ void ofApp::mouseMoved(int x, int y) {
 }
 
 void ofApp::mouseDragged(int x, int y, int button) {
-  if (y > frameHeight/2) {
-    switch (drawMode) {
-      case BRUSH_DRAW_MODE:
-        addPoint(x, y - frameHeight/2, true);
-        break;
-      case LINEAR_GRADIENT_DRAW_MODE:
-        break;
-      case RADIAL_GRADIENT_DRAW_MODE:
-        break;
-    }
-  }
 }
 
 void ofApp::mousePressed(int x, int y, int button) {
   if (y > frameHeight/2) {
-    switch (drawMode) {
-      case BRUSH_DRAW_MODE:
-        addPoint(x, y - frameHeight/2, true);
-        break;
-      case LINEAR_GRADIENT_DRAW_MODE:
-      case RADIAL_GRADIENT_DRAW_MODE:
-        gradientStartX = x;
-        gradientStartY = y - frameHeight/2;
-        break;
-    }
+    gradientStartX = x;
+    gradientStartY = y - frameHeight/2;
   }
 }
 
 void ofApp::mouseReleased(int x, int y, int button) {
-  switch (drawMode) {
-    case BRUSH_DRAW_MODE:
-      break;
-    case LINEAR_GRADIENT_DRAW_MODE:
-    case RADIAL_GRADIENT_DRAW_MODE:
-      gradientEndX = x;
-      gradientEndY = y - frameHeight/2;
-      drawGradient();
-      break;
-  }
+  gradientEndX = x;
+  gradientEndY = y - frameHeight/2;
+  drawGradient();
 }
 
 void ofApp::windowResized(int w, int h) {
@@ -416,3 +253,4 @@ void ofApp::dragEvent(ofDragInfo dragInfo) {
 void ofApp::gradientIntensityChanged(float & value){
   drawGradient();
 }
+
