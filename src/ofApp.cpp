@@ -8,6 +8,8 @@ void ofApp::setup() {
   frameHeight = 0;
   frameCount = 0;
 
+  gradientStops = std::vector<GradientStop>();
+
   loadSettings();
 
   inputPixels = NULL;
@@ -15,20 +17,19 @@ void ofApp::setup() {
   maskPixelsDetail = NULL;
   outputPixels = NULL;
 
+  showMask = false;
+
+  guiMargin = 220;
   gui.setup();
+  gui.add(clearGradientButton.setup("clear gradient (c)"));
   gui.add(gradientStartIntensity.setup("gradient start", 0, 0, 65025));
   gui.add(gradientEndIntensity.setup("gradient end", 65025, 0, 65025));
 
+  clearGradientButton.addListener(this, &ofApp::clearGradientClicked);
   gradientStartIntensity.addListener(this, &ofApp::gradientIntensityChanged);
   gradientEndIntensity.addListener(this, &ofApp::gradientIntensityChanged);
 
   loadFrames("adam_magyar_stainless01");
-
-  gradientStartX = 100;
-  gradientStartY = 200;
-  gradientEndX = 500;
-  gradientEndY = 400;
-  drawGradient();
 }
 
 void ofApp::update() {
@@ -38,26 +39,30 @@ void ofApp::draw() {
   ofBackground(0);
 
   if (frameWidth > 0) {
-    for (int i = 0; i < frameWidth * frameHeight; i++) {
-      int frameIndex = maskPixelsDetail[i] / frameToBrushColor;
-      for (int c = 0; c < 3; c++) {
-        outputPixels[i * 3 + c] = inputPixels[frameIndex * frameWidth * frameHeight * 3 + i * 3 + c];
+    if (showMask) {
+      drawImage.setFromPixels(maskPixels, frameWidth, frameHeight, OF_IMAGE_GRAYSCALE);
+    }
+    else {
+      for (int i = 0; i < frameWidth * frameHeight; i++) {
+        int frameIndex = maskPixelsDetail[i] / frameToBrushColor;
+        for (int c = 0; c < 3; c++) {
+          outputPixels[i * 3 + c] = inputPixels[frameIndex * frameWidth * frameHeight * 3 + i * 3 + c];
+        }
       }
+
+      drawImage.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
     }
 
     ofSetColor(255);
-
-    mask.setFromPixels(maskPixels, frameWidth, frameHeight, OF_IMAGE_GRAYSCALE);
-    mask.draw(frameWidth/2, 0, frameWidth/2, frameHeight/2);
-
-    distorted.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
-    distorted.draw(0, frameHeight/2, frameWidth, frameHeight);
+    drawImage.draw(guiMargin, 0);
 
     ofFill();
-    ofSetColor(255, 0, 0, 64);
+    ofSetColor(255, 0, 0, 128);
     ofEnableAlphaBlending();
-    ofCircle(gradientStartX, frameHeight/2 + gradientStartY, 10);
-    ofCircle(gradientEndX, frameHeight/2 + gradientEndY, 10);
+    for (int i = 0; i < gradientStops.size(); i++) {
+      GradientStop stop = gradientStops[i];
+      ofCircle(guiMargin + stop.pos.x, stop.pos.y, 10);
+    }
     ofDisableAlphaBlending();
   }
 
@@ -132,6 +137,11 @@ void ofApp::loadFrames(string path) {
   cout << "Loading complete." << endl;
 }
 
+void ofApp::clearGradient() {
+  gradientStops = std::vector<GradientStop>();
+  clearMask();
+}
+
 void ofApp::clearMask() {
   for (int i = 0; i < frameWidth * frameHeight; i++) {
     maskPixels[i] = maskPixelsDetail[i] = 0;
@@ -139,6 +149,7 @@ void ofApp::clearMask() {
 }
 
 void ofApp::loadMask() {
+  ofImage mask;
   if (mask.loadImage("mask.png")) {
     float maxColor = (frameCount - 1) * frameToBrushColor;
     unsigned char* loadMaskPixels = mask.getPixels();
@@ -153,19 +164,23 @@ void ofApp::loadMask() {
 }
 
 void ofApp::saveMask() {
+  ofImage mask;
   mask.setFromPixels(maskPixels, frameWidth, frameHeight, OF_IMAGE_GRAYSCALE);
   mask.saveImage("mask.png");
 }
 
 void ofApp::saveDistorted() {
+  ofImage distorted;
   distorted.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
   distorted.saveImage("render.jpg", OF_IMAGE_QUALITY_BEST);
 }
 
-void ofApp::drawGradient() {
+void ofApp::updateGradient() {
+  if (gradientStops.size() < 2) return;
+
   ofVec2f start, end, u, v, w, curr;
-  start.set(gradientStartX, gradientStartY);
-  end.set(gradientEndX, gradientEndY);
+  start = gradientStops[0].pos;
+  end = gradientStops[1].pos;
   v = end - start;
   float d = v.length();
 
@@ -205,19 +220,24 @@ void ofApp::keyPressed(int key) {
 void ofApp::keyReleased(int key) {
   switch (key) {
     case 'r':
-      loadMask();
-      break;
-
-    case 'w':
-      saveMask();
-      break;
-
-    case 's':
+    case ' ':
       saveDistorted();
       break;
 
-    case 'x':
-      clearFrames();
+    case 'c':
+      clearGradient();
+      break;
+
+    case 'l':
+      loadMask();
+      break;
+
+    case 's':
+      saveMask();
+      break;
+
+    case 't':
+      showMask = !showMask;
       break;
   }
 }
@@ -229,16 +249,13 @@ void ofApp::mouseDragged(int x, int y, int button) {
 }
 
 void ofApp::mousePressed(int x, int y, int button) {
-  if (y > frameHeight/2) {
-    gradientStartX = x;
-    gradientStartY = y - frameHeight/2;
-  }
 }
 
 void ofApp::mouseReleased(int x, int y, int button) {
-  gradientEndX = x;
-  gradientEndY = y - frameHeight/2;
-  drawGradient();
+  GradientStop stop;
+  stop.pos.set(x - guiMargin, y);
+  gradientStops.push_back(stop);
+  updateGradient();
 }
 
 void ofApp::windowResized(int w, int h) {
@@ -250,7 +267,11 @@ void ofApp::gotMessage(ofMessage msg) {
 void ofApp::dragEvent(ofDragInfo dragInfo) {
 }
 
+void ofApp::clearGradientClicked() {
+  clearGradient();
+}
+
 void ofApp::gradientIntensityChanged(float & value){
-  drawGradient();
+  updateGradient();
 }
 

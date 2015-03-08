@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxGui.h"
 #include "ofxXmlSettings.h"
+#include "GradientStop.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -17,12 +18,13 @@ public:
   int countFrames(string path);
   void clearFrames();
   void loadFrames(string path);
+  void clearGradient();
   void clearMask();
   void loadMask();
   void saveMask();
   void saveDistorted();
 
-  void drawGradient();
+  void updateGradient();
 
   void keyPressed(int key);
   void keyReleased(int key);
@@ -34,26 +36,26 @@ public:
   void dragEvent(ofDragInfo dragInfo);
   void gotMessage(ofMessage msg);
 
+  void clearGradientClicked();
   void gradientIntensityChanged(float &value);
 
+  std::vector<GradientStop> gradientStops;
+
+  int guiMargin;
   ofxPanel gui;
+  ofxButton clearGradientButton;
   ofxFloatSlider gradientStartIntensity;
   ofxFloatSlider gradientEndIntensity;
 
   int frameToBrushColor;
-
-  int gradientStartX;
-  int gradientStartY;
-  int gradientEndX;
-  int gradientEndY;
 
   unsigned char* inputPixels;
   unsigned char* maskPixels;
   unsigned short int* maskPixelsDetail;
   unsigned char* outputPixels;
 
-  ofImage mask;
-  ofImage distorted;
+  bool showMask;
+  ofImage drawImage;
 
   int screenWidth;
   int screenHeight;
