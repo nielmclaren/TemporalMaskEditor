@@ -26,8 +26,6 @@ public:
   void saveMask();
   void saveDistorted();
 
-  void updatePreviewIndex(int delta);
-  void setPreviewIndex(int i);
   void updateBrush();
   void addPoint(float x, float y, bool newStroke);
   void addBrush(int x, int y);
@@ -78,16 +76,11 @@ public:
   int gradientEndX;
   int gradientEndY;
 
-  int previewIndex;
-  int previewIndexDelta;
-
   unsigned char* inputPixels;
   unsigned char* maskPixels;
   unsigned short int* maskPixelsDetail;
-  unsigned char* previewPixels;
   unsigned char* outputPixels;
 
-  ofImage preview;
   ofImage mask;
   ofImage distorted;
 
@@ -97,8 +90,4 @@ public:
   int frameWidth;
   int frameHeight;
   int frameCount;
-
-  bool isPreviewDragging;
-
-  unsigned long keyDownTime;
 };

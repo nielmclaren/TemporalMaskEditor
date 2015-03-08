@@ -17,8 +17,6 @@ void ofApp::setup() {
   loadSettings();
   updateBrush();
 
-  isPreviewDragging = false;
-
   inputPixels = NULL;
   maskPixels = NULL;
   maskPixelsDetail = NULL;
@@ -50,12 +48,6 @@ void ofApp::setup() {
 }
 
 void ofApp::update() {
-  if (frameWidth > 0) {
-    // Delay before playback
-    if (ofGetSystemTime() - keyDownTime > 400) {
-      updatePreviewIndex(previewIndexDelta);
-    }
-  }
 }
 
 void ofApp::draw() {
@@ -70,8 +62,6 @@ void ofApp::draw() {
     }
 
     ofSetColor(255);
-
-    preview.draw(0, 0, frameWidth/2, frameHeight/2);
 
     mask.setFromPixels(maskPixels, frameWidth, frameHeight, OF_IMAGE_GRAYSCALE);
     mask.draw(frameWidth/2, 0, frameWidth/2, frameHeight/2);
@@ -131,8 +121,6 @@ void ofApp::clearFrames() {
   maskPixelsDetail = NULL;
   outputPixels = NULL;
 
-  previewIndex = 0;
-
   frameCount = 0;
   frameWidth = 0;
   frameHeight = 0;
@@ -168,14 +156,12 @@ void ofApp::loadFrames(string path) {
 
   maskPixels = new unsigned char[frameWidth * frameHeight * 1];
   maskPixelsDetail = new unsigned short int[frameWidth * frameHeight * 1];
-  previewPixels = new unsigned char[frameWidth * frameHeight * 3];
   outputPixels = new unsigned char[frameWidth * frameHeight * 3];
 
   clearMask();
 
   frameToBrushColor = 255 * 255 / (frameCount - 1);
   brushColor = maxColor = (frameCount - 1) * frameToBrushColor;
-  previewIndex = frameCount - 1;
 
   cout << "Loading complete." << endl;
 }
@@ -207,30 +193,6 @@ void ofApp::saveMask() {
 void ofApp::saveDistorted() {
   distorted.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
   distorted.saveImage("render.jpg", OF_IMAGE_QUALITY_BEST);
-}
-
-void ofApp::updatePreviewIndex(int delta) {
-  previewIndexDelta = delta;
-  setPreviewIndex(previewIndex + delta);
-}
-
-void ofApp::setPreviewIndex(int i) {
-  previewIndex = i;
-
-  if (previewIndex < 0) {
-    previewIndex = 0;
-  }
-  if (previewIndex >= frameCount) {
-    previewIndex = frameCount - 1;
-  }
-
-  brushColor = previewIndex * frameToBrushColor;
-  for (int i = 0; i < frameWidth * frameHeight; i++) {
-    for (int c = 0; c < 3; c++) {
-      previewPixels[i * 3 + c] = inputPixels[previewIndex * frameWidth * frameHeight * 3 + i * 3 + c];
-    }
-  }
-  preview.setFromPixels(previewPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
 }
 
 void ofApp::updateBrush() {
@@ -353,28 +315,10 @@ int ofApp::countFrames(string path) {
 }
 
 void ofApp::keyPressed(int key) {
-  keyDownTime = ofGetSystemTime();
-  switch (key) {
-    case OF_KEY_RIGHT:
-      updatePreviewIndex(1);
-      break;
-
-    case OF_KEY_LEFT:
-      updatePreviewIndex(-1);
-      break;
-  }
 }
 
 void ofApp::keyReleased(int key) {
   switch (key) {
-    case OF_KEY_RIGHT:
-      updatePreviewIndex(0);
-      break;
-
-    case OF_KEY_LEFT:
-      updatePreviewIndex(0);
-      break;
-
     case OF_KEY_UP:
       brushFlow = MIN(255 * 255, brushFlow + 1);
       cout << "Brush flow: " << brushFlow << endl;
@@ -419,12 +363,7 @@ void ofApp::mouseMoved(int x, int y) {
 }
 
 void ofApp::mouseDragged(int x, int y, int button) {
-  if (y < frameHeight/2) {
-    if (isPreviewDragging) {
-      setPreviewIndex((float) x / (frameWidth/2) * (frameCount - 2));
-    }
-  }
-  else {
+  if (y > frameHeight/2) {
     switch (drawMode) {
       case BRUSH_DRAW_MODE:
         addPoint(x, y - frameHeight/2, true);
@@ -438,11 +377,7 @@ void ofApp::mouseDragged(int x, int y, int button) {
 }
 
 void ofApp::mousePressed(int x, int y, int button) {
-  if (y < frameHeight/2 && x < frameWidth/2) {
-    setPreviewIndex((float) x / (frameWidth/2) * (frameCount - 2));
-    isPreviewDragging = true;
-  }
-  else {
+  if (y > frameHeight/2) {
     switch (drawMode) {
       case BRUSH_DRAW_MODE:
         addPoint(x, y - frameHeight/2, true);
@@ -457,7 +392,6 @@ void ofApp::mousePressed(int x, int y, int button) {
 }
 
 void ofApp::mouseReleased(int x, int y, int button) {
-  isPreviewDragging = false;
   switch (drawMode) {
     case BRUSH_DRAW_MODE:
       break;
