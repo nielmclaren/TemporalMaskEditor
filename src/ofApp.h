@@ -44,8 +44,6 @@ public:
   int guiMargin;
   ofxPanel gui;
   ofxButton clearGradientButton;
-  ofxFloatSlider gradientStartIntensity;
-  ofxFloatSlider gradientEndIntensity;
 
   int frameToBrushColor;
 

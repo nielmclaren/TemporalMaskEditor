@@ -8,8 +8,6 @@ void ofApp::setup() {
   frameHeight = 0;
   frameCount = 0;
 
-  gradientStops = std::vector<GradientStop>();
-
   loadSettings();
 
   inputPixels = NULL;
@@ -21,13 +19,9 @@ void ofApp::setup() {
 
   guiMargin = 220;
   gui.setup();
-  gui.add(clearGradientButton.setup("clear gradient (c)"));
-  gui.add(gradientStartIntensity.setup("gradient start", 0, 0, 65025));
-  gui.add(gradientEndIntensity.setup("gradient end", 65025, 0, 65025));
-
+  clearGradientButton.setup("clear gradient (c)");
   clearGradientButton.addListener(this, &ofApp::clearGradientClicked);
-  gradientStartIntensity.addListener(this, &ofApp::gradientIntensityChanged);
-  gradientEndIntensity.addListener(this, &ofApp::gradientIntensityChanged);
+  clearGradient();
 
   loadFrames("adam_magyar_stainless01");
 }
@@ -138,7 +132,14 @@ void ofApp::loadFrames(string path) {
 }
 
 void ofApp::clearGradient() {
+  for (int i = 0; i < gradientStops.size(); i++) {
+    GradientStop stop = gradientStops[i];
+    stop.intensity->removeListener(this, &ofApp::gradientIntensityChanged);
+  }
+
   gradientStops = std::vector<GradientStop>();
+  gui.add(&clearGradientButton);
+
   clearMask();
 }
 
@@ -177,6 +178,9 @@ void ofApp::saveDistorted() {
 
 void ofApp::updateGradient() {
   if (gradientStops.size() < 2) return;
+
+  float gradientStartIntensity = *(gradientStops[0].intensity);
+  float gradientEndIntensity = *(gradientStops[1].intensity);
 
   ofVec2f start, end, u, v, w, curr;
   start = gradientStops[0].pos;
@@ -252,8 +256,15 @@ void ofApp::mousePressed(int x, int y, int button) {
 }
 
 void ofApp::mouseReleased(int x, int y, int button) {
+  int i = gradientStops.size();
   GradientStop stop;
   stop.pos.set(x - guiMargin, y);
+  stop.intensity = new ofxFloatSlider;
+  stop.intensity->setup("stop " + ofToString(i) + " intensity", i % 2 == 0 ? 0 : 65025, 0, 65025);
+
+  gui.add(stop.intensity);
+  stop.intensity->addListener(this, &ofApp::gradientIntensityChanged);
+
   gradientStops.push_back(stop);
   updateGradient();
 }
