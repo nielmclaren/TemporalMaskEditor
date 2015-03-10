@@ -25,6 +25,7 @@ public:
   void saveDistorted();
 
   void updateGradient();
+  void updateGradient(GradientStop, GradientStop);
 
   void keyPressed(int key);
   void keyReleased(int key);
@@ -38,6 +39,8 @@ public:
 
   void clearGradientClicked();
   void gradientIntensityChanged(float &value);
+
+  int findIntersection(float, float, float, float, float, float, float, float, ofVec2f*);
 
   std::vector<GradientStop> gradientStops;
 

@@ -50,14 +50,14 @@ void ofApp::draw() {
     ofSetColor(255);
     drawImage.draw(guiMargin, 0);
 
-    ofFill();
-    ofSetColor(255, 0, 0, 128);
-    ofEnableAlphaBlending();
+    ofNoFill();
+    ofSetColor(128);
     for (int i = 0; i < gradientStops.size(); i++) {
       GradientStop stop = gradientStops[i];
+      ofVec2f d = stop.dir.getScaled(15);
       ofCircle(guiMargin + stop.pos.x, stop.pos.y, 10);
+      ofLine(guiMargin + stop.pos.x, stop.pos.y, guiMargin + stop.pos.x + d.x, stop.pos.y + d.y);
     }
-    ofDisableAlphaBlending();
   }
 
   gui.draw();
@@ -138,6 +138,7 @@ void ofApp::clearGradient() {
   }
 
   gradientStops = std::vector<GradientStop>();
+  gui.clear();
   gui.add(&clearGradientButton);
 
   clearMask();
@@ -177,33 +178,86 @@ void ofApp::saveDistorted() {
 }
 
 void ofApp::updateGradient() {
-  if (gradientStops.size() < 2) return;
+  int numStops = gradientStops.size();
+  ofVec2f d;
 
-  float gradientStartIntensity = *(gradientStops[0].intensity);
-  float gradientEndIntensity = *(gradientStops[1].intensity);
+  for (int i = 0; i < frameWidth * frameHeight; i++) {
+    maskPixelsDetail[i] = maskPixels[i] = 0;
+  }
 
-  ofVec2f start, end, u, v, w, curr;
-  start = gradientStops[0].pos;
-  end = gradientStops[1].pos;
-  v = end - start;
+  for (int i = 0; i < numStops; i++) {
+    gradientStops[i].dir.zero();
+  }
+
+  if (numStops < 2) return;
+
+  for (int i = 0; i < numStops; i++) {
+    GradientStop* curr = &gradientStops[i];
+
+    if (i > 0) {
+      GradientStop prev = gradientStops[i - 1];
+      curr->dir += curr->pos - prev.pos;
+    }
+    if (i < numStops - 1) {
+      GradientStop next = gradientStops[i + 1];
+      curr->dir += next.pos - curr->pos;
+    }
+
+    curr->dir.normalize();
+  }
+
+  for (int i = 0; i < numStops - 1; i++) {
+    GradientStop stop0 = gradientStops[i];
+    GradientStop stop1 = gradientStops[i + 1];
+
+    updateGradient(stop0, stop1);
+  }
+}
+
+// TODO: Pass by ref prolly, aye?
+void ofApp::updateGradient(GradientStop stop0, GradientStop stop1) {
+  ofVec2f p0 = stop0.pos;
+  ofVec2f p1 = stop1.pos;
+  ofVec2f perp0(-stop0.dir.y, stop0.dir.x);
+  ofVec2f perp1(-stop1.dir.y, stop1.dir.x);
+  ofVec2f curr;
+  ofVec2f u, w, v = p1 - p0;
   float d = v.length();
+  float b;
+  float value;
+  ofVec2f intersect0, intersect1;
+  float intersectDist, intersectDist0, intersectDist1;
+  int i;
 
   for (int x = 0; x < frameWidth; x++) {
     for (int y = 0; y < frameHeight; y++) {
-      int i = y * frameWidth + x;
+      i = y * frameWidth + x;
       curr.set(x, y);
-      u = curr - start;
-      w = u.dot(v) * v / v.length() / v.length();
+      u = curr - p0;
+      u.set(-u.y, u.x);
+      w = v.getScaled(u.dot(v) / v.length() / v.length());
 
-      if (u.dot(v) < 0) {
-        maskPixelsDetail[i] = gradientStartIntensity;
+      if (findIntersection(
+          x, y, x + v.x, y + v.y,
+          p0.x, p0.y, p0.x + perp0.x, p0.y + perp0.y, &intersect0)
+        || findIntersection(
+          x, y, x + v.x, y + v.y,
+          p1.x, p1.y, p1.x + perp1.x, p1.y + perp1.y, &intersect1)) {
+        // FIXME: Handle parallel lines.
+        cout << "Lines were parallel." << endl;
       }
-      else {
-        maskPixelsDetail[i] = ofMap(
-          w.length() / d,
+
+      intersectDist = (intersect1 - intersect0).length();
+      intersectDist0 = (curr - intersect0).length();
+      intersectDist1 = (curr - intersect1).length();
+
+      if (intersectDist0 < intersectDist && intersectDist1 < intersectDist) {
+        value = ofMap(
+          intersectDist0 / intersectDist,
           0, 1,
-          gradientStartIntensity, gradientEndIntensity,
+          *(stop0.intensity), *(stop1.intensity),
           true);
+        maskPixelsDetail[i] = MAX(maskPixelsDetail[i], value);
       }
 
       maskPixels[i] = maskPixelsDetail[i] / 255;
@@ -284,5 +338,46 @@ void ofApp::clearGradientClicked() {
 
 void ofApp::gradientIntensityChanged(float & value){
   updateGradient();
+}
+
+/**
+ * Based on code by Marius Watz. Thanks, Marius!
+ * @see http://workshop.evolutionzone.com/2007/09/10/code-2d-line-intersection/
+ */
+int ofApp::findIntersection(
+    float p1x, float p1y, float p2x, float p2y,
+    float p3x, float p3y, float p4x, float p4y,
+    ofVec2f* result) {
+  float xD1,yD1,xD2,yD2,xD3,yD3;
+  float dot,deg,len1,len2;
+  float ua,ub,div;
+
+  // calculate differences
+  xD1=p2x-p1x;
+  xD2=p4x-p3x;
+  yD1=p2y-p1y;
+  yD2=p4y-p3y;
+  xD3=p1x-p3x;
+  yD3=p1y-p3y;
+
+  // calculate the lengths of the two lines
+  len1=sqrt(xD1*xD1+yD1*yD1);
+  len2=sqrt(xD2*xD2+yD2*yD2);
+
+  // calculate angle between the two lines.
+  dot=(xD1*xD2+yD1*yD2); // dot product
+  deg=dot/(len1*len2);
+
+  // if abs(angle)==1 then the lines are parallel,
+  // so no intersection is possible
+  if(abs(deg)==1) return NULL;
+
+  // find intersection Pt between two lines
+  div=yD2*xD1-xD2*yD1;
+  ua=(xD2*yD3-yD2*xD3)/div;
+  ub=(xD1*yD3-yD1*xD3)/div;
+
+  result->set(p1x+ua*xD1, p1y+ua*yD1);
+  return 0;
 }
 
