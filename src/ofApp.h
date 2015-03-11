@@ -5,6 +5,8 @@
 #include "ofxXmlSettings.h"
 #include "GradientStop.h"
 
+#define GRADIENT_STOP_RADIUS 8
+
 class ofApp : public ofBaseApp {
 public:
   void setup();
@@ -40,9 +42,11 @@ public:
   void clearGradientClicked();
   void gradientIntensityChanged(float &value);
 
+  bool hitTestGradientStop(GradientStop*, ofVec2f*);
   int findIntersection(float, float, float, float, float, float, float, float, ofVec2f*);
 
   std::vector<GradientStop> gradientStops;
+  int draggingStopIndex;
 
   int guiMargin;
   ofxPanel gui;

@@ -6,13 +6,27 @@
          contextName = "ofApp::loadFrames(std::string):ofApp.cpp">
          <PersistentStrings>
             <PersistentString
+               value = "frameCount">
+            </PersistentString>
+            <PersistentString
                value = "brushColor">
             </PersistentString>
             <PersistentString
                value = "frameToBrushColor">
             </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::mouseReleased(int, int, int):ofApp.cpp">
+         <PersistentStrings>
             <PersistentString
-               value = "frameCount">
+               value = "gradientStops[1].pos">
+            </PersistentString>
+            <PersistentString
+               value = "draggingStop">
+            </PersistentString>
+            <PersistentString
+               value = "gradientStops[0].pos">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

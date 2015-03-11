@@ -17,6 +17,8 @@ void ofApp::setup() {
 
   showMask = false;
 
+  draggingStopIndex = -1;
+
   guiMargin = 220;
   gui.setup();
   clearGradientButton.setup("clear gradient (c)");
@@ -55,7 +57,7 @@ void ofApp::draw() {
     for (int i = 0; i < gradientStops.size(); i++) {
       GradientStop stop = gradientStops[i];
       ofVec2f d = stop.dir.getScaled(15);
-      ofCircle(guiMargin + stop.pos.x, stop.pos.y, 10);
+      ofCircle(guiMargin + stop.pos.x, stop.pos.y, GRADIENT_STOP_RADIUS);
       ofLine(guiMargin + stop.pos.x, stop.pos.y, guiMargin + stop.pos.x + d.x, stop.pos.y + d.y);
     }
   }
@@ -304,23 +306,46 @@ void ofApp::mouseMoved(int x, int y) {
 }
 
 void ofApp::mouseDragged(int x, int y, int button) {
+  if (draggingStopIndex >= 0) {
+    gradientStops[draggingStopIndex].pos.set(x - guiMargin, y);
+  }
 }
 
 void ofApp::mousePressed(int x, int y, int button) {
+  ofVec2f mouse(x - guiMargin, y);
+
+  draggingStopIndex = -1;
+
+  int numStops = gradientStops.size();
+  for (int i = 0; i < numStops; i++) {
+    GradientStop stop = gradientStops[i];
+    if (hitTestGradientStop(&stop, &mouse)) {
+      draggingStopIndex = i;
+    }
+  }
 }
 
 void ofApp::mouseReleased(int x, int y, int button) {
-  int i = gradientStops.size();
-  GradientStop stop;
-  stop.pos.set(x - guiMargin, y);
-  stop.intensity = new ofxFloatSlider;
-  stop.intensity->setup("stop " + ofToString(i) + " intensity", i % 2 == 0 ? 0 : 65025, 0, 65025);
+  if (draggingStopIndex >= 0) {
+    gradientStops[draggingStopIndex].pos.set(x - guiMargin, y);
+    draggingStopIndex = -1;
+    updateGradient();
+  }
+  else {
+    int numStops = gradientStops.size();
+    GradientStop stop;
+    stop.pos.set(x - guiMargin, y);
+    stop.intensity = new ofxFloatSlider;
+    stop.intensity->setup(
+        "stop " + ofToString(numStops),
+        numStops % 2 == 0 ? 0 : 65025, 0, 65025);
 
-  gui.add(stop.intensity);
-  stop.intensity->addListener(this, &ofApp::gradientIntensityChanged);
+    gui.add(stop.intensity);
+    stop.intensity->addListener(this, &ofApp::gradientIntensityChanged);
 
-  gradientStops.push_back(stop);
-  updateGradient();
+    gradientStops.push_back(stop);
+    updateGradient();
+  }
 }
 
 void ofApp::windowResized(int w, int h) {
@@ -338,6 +363,10 @@ void ofApp::clearGradientClicked() {
 
 void ofApp::gradientIntensityChanged(float & value){
   updateGradient();
+}
+
+bool ofApp::hitTestGradientStop(GradientStop* stop, ofVec2f* test) {
+  return (*(test) - stop->pos).length() < GRADIENT_STOP_RADIUS;
 }
 
 /**
