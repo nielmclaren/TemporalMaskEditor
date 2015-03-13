@@ -3,30 +3,52 @@
    version = "1.0">
    <ContextStates>
       <ContextState
-         contextName = "ofApp::loadFrames(std::string):ofApp.cpp">
+         contextName = "ofApp::updateGradient(GradientStop, GradientStop):ofApp.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "ofxGuiGroup::add(ofxBaseGui*):ofxGuiGroup.cpp">
          <PersistentStrings>
             <PersistentString
-               value = "frameCount">
-            </PersistentString>
-            <PersistentString
-               value = "brushColor">
-            </PersistentString>
-            <PersistentString
-               value = "frameToBrushColor">
+               value = "b">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
       <ContextState
+         contextName = "ofApp::loadSettings():ofApp.cpp">
+      </ContextState>
+      <ContextState
          contextName = "ofApp::mouseReleased(int, int, int):ofApp.cpp">
          <PersistentStrings>
+            <PersistentString
+               value = "gradientStops[0].pos">
+            </PersistentString>
             <PersistentString
                value = "gradientStops[1].pos">
             </PersistentString>
             <PersistentString
                value = "draggingStop">
             </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::loadFrames(std::string):ofApp.cpp">
+         <PersistentStrings>
             <PersistentString
-               value = "gradientStops[0].pos">
+               value = "frameToBrushColor">
+            </PersistentString>
+            <PersistentString
+               value = "brushColor">
+            </PersistentString>
+            <PersistentString
+               value = "frameCount">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::addGradientStop(float, float, float, float, float):ofApp.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "stop.intensity">
             </PersistentString>
          </PersistentStrings>
       </ContextState>

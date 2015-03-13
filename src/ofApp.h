@@ -2,10 +2,8 @@
 
 #include "ofMain.h"
 #include "ofxGui.h"
-#include "ofxXmlSettings.h"
 #include "GradientStop.h"
-
-#define GRADIENT_STOP_RADIUS 8
+#include "GradientKeyframe.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -14,20 +12,15 @@ public:
   void draw();
   void exit();
 
-  void saveFrame();
-  void loadSettings();
-  void saveSettings();
+  void saveDistorted();
   int countFrames(string path);
   void clearFrames();
   void loadFrames(string path);
-  void clearGradient();
   void clearMask();
-  void loadMask();
-  void saveMask();
-  void saveDistorted();
+  void clearStops();
 
-  void updateGradient();
-  void updateGradient(GradientStop, GradientStop);
+  void clearKeyframes();
+  void setKeyframe(int i);
 
   void keyPressed(int key);
   void keyReleased(int key);
@@ -39,18 +32,21 @@ public:
   void dragEvent(ofDragInfo dragInfo);
   void gotMessage(ofMessage msg);
 
-  void clearGradientClicked();
-  void gradientIntensityChanged(float &value);
+  void clearGradientButtonClicked();
+  void intensitySliderChanged(int& value);
 
-  bool hitTestGradientStop(GradientStop*, ofVec2f*);
-  int findIntersection(float, float, float, float, float, float, float, float, ofVec2f*);
+  GradientStop* draggingStop;
 
-  std::vector<GradientStop> gradientStops;
-  int draggingStopIndex;
+  std::vector<GradientKeyframe*> keyframes;
+  int currKeyframeIndex;
+  GradientKeyframe* currKeyframe;
 
   int guiMargin;
   ofxPanel gui;
+  ofxGuiGroup globalGui;
   ofxButton clearGradientButton;
+  ofxLabel keyframeLabel;
+  ofxGuiGroup keyframeGui;
 
   int frameToBrushColor;
 
@@ -69,3 +65,4 @@ public:
   int frameHeight;
   int frameCount;
 };
+
