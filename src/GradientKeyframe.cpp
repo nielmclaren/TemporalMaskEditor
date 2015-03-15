@@ -24,10 +24,6 @@ void GradientKeyframe::draw() {
   }
 }
 
-void GradientKeyframe::setGuiGroup(ofxGuiGroup* guiGroup) {
-  gui = guiGroup;
-}
-
 GradientStop* GradientKeyframe::addStop(string label, float posx, float posy, int intensity) {
   return addStop(label, posx, posy, 0, 0, intensity);
 }
@@ -43,24 +39,12 @@ GradientStop* GradientKeyframe::addStop(string label, float posx, float posy, fl
   slider->setup(label, intensity, 0, 65025);
   stop->intensity = slider;
 
-  if (gui) {
-    gui->add(slider);
-  }
-
   stops.push_back(stop);
   return stop;
 }
 
-void GradientKeyframe::updateStopPos(int stopIndex, float x, float y) {
-  stops[stopIndex]->pos.set(x, y);
-}
-
-void GradientKeyframe::updateStopDir(int stopIndex, float x, float y) {
-  stops[stopIndex]->dir.set(x, y);
-}
-
-void GradientKeyframe::updateStopIntensity(int stopIndex, int intensity) {
-  *(stops[stopIndex]->intensity) = intensity;
+GradientStop* GradientKeyframe::getStop(int stopIndex) {
+  return stops[stopIndex];
 }
 
 int GradientKeyframe::numStops() {
@@ -73,10 +57,6 @@ void GradientKeyframe::clearStops() {
     delete stops[i];
   }
   stops.clear();
-
-  if (gui) {
-    gui->clear();
-  }
 }
 
 void GradientKeyframe::updateGradient(

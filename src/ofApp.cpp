@@ -24,7 +24,12 @@ void ofApp::setup() {
 
   gui.add(globalGui.setup());
   globalGui.add(clearGradientButton.setup("clear gradient (c)"));
+  globalGui.add(firstKeyframeButton.setup("first keyframe"));
+  globalGui.add(lastKeyframeButton.setup("last keyframe"));
+
   clearGradientButton.addListener(this, &ofApp::clearGradientButtonClicked);
+  firstKeyframeButton.addListener(this, &ofApp::firstKeyframeButtonClicked);
+  lastKeyframeButton.addListener(this, &ofApp::lastKeyframeButtonClicked);
 
   globalGui.add(keyframeLabel.setup("current keyframe", "0", 200, 20));
 
@@ -114,9 +119,28 @@ void ofApp::clearKeyframes() {
 }
 
 void ofApp::setKeyframe(int index) {
+  int numStops;
+
+  if (currKeyframe) {
+    numStops = currKeyframe->numStops();
+    for (int i = 0; i < numStops; i++) {
+      GradientStop* stop = currKeyframe->getStop(i);
+      stop->intensity->removeListener(this, &ofApp::intensitySliderChanged);
+    }
+  }
+
   currKeyframeIndex = index;
   currKeyframe = keyframes[index];
   keyframeLabel = ofToString(index);
+
+  keyframeGui.clear();
+
+  numStops = currKeyframe->numStops();
+  for (int i = 0; i < numStops; i++) {
+    GradientStop* stop = currKeyframe->getStop(i);
+    stop->intensity->addListener(this, &ofApp::intensitySliderChanged);
+    keyframeGui.add(stop->intensity);
+  }
 }
 
 void ofApp::loadFrames(string path) {
@@ -150,9 +174,14 @@ void ofApp::loadFrames(string path) {
 
   clearMask();
 
-  GradientKeyframe* keyframe = new GradientKeyframe;
+  GradientKeyframe* keyframe;
+
+  keyframe = new GradientKeyframe;
   keyframe->setup(frameWidth, frameHeight);
-  keyframe->setGuiGroup(&keyframeGui);
+  keyframes.push_back(keyframe);
+
+  keyframe = new GradientKeyframe;
+  keyframe->setup(frameWidth, frameHeight);
   keyframes.push_back(keyframe);
   setKeyframe(0);
 
@@ -177,6 +206,22 @@ void ofApp::clearStops() {
   currKeyframe->updateGradient(maskPixelsDetail, maskPixels);
 
   keyframeGui.clear();
+}
+
+void ofApp::addStop(int x, int y) {
+  int numKeyframes = keyframes.size();
+  for (int i = 0; i < numKeyframes; i++) {
+    GradientKeyframe* keyframe = keyframes[i];
+    int numStops = keyframe->numStops();
+    GradientStop* stop = keyframe->addStop(
+        "stop " + ofToString(numStops), x, y,
+        numStops % 2 == 0 ? 0 : 65025);
+
+    if (i == currKeyframeIndex) {
+      keyframeGui.add(stop->intensity);
+      stop->intensity->addListener(this, &ofApp::intensitySliderChanged);
+    }
+  }
 }
 
 void ofApp::keyPressed(int key) {
@@ -220,13 +265,7 @@ void ofApp::mouseReleased(int x, int y, int button) {
     draggingStop = NULL;
   }
   else {
-    int numStops = currKeyframe->numStops();
-    GradientStop* stop = currKeyframe->addStop(
-        "stop " + ofToString(numStops),
-        x - guiMargin, y,
-        numStops % 2 == 0 ? 0 : 65025);
-
-    stop->intensity->addListener(this, &ofApp::intensitySliderChanged);
+    addStop(x - guiMargin, y);
 
     // NOTE: Seems to be a bug where keyframeGui doesn't update.
     keyframeGui.registerMouseEvents();
@@ -246,6 +285,14 @@ void ofApp::dragEvent(ofDragInfo dragInfo) {
 
 void ofApp::clearGradientButtonClicked() {
   clearStops();
+}
+
+void ofApp::firstKeyframeButtonClicked() {
+  setKeyframe(0);
+}
+
+void ofApp::lastKeyframeButtonClicked() {
+  setKeyframe(1);
 }
 
 void ofApp::intensitySliderChanged(int& value) {

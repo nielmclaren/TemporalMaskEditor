@@ -18,6 +18,7 @@ public:
   void loadFrames(string path);
   void clearMask();
   void clearStops();
+  void addStop(int, int);
 
   void clearKeyframes();
   void setKeyframe(int i);
@@ -33,6 +34,8 @@ public:
   void gotMessage(ofMessage msg);
 
   void clearGradientButtonClicked();
+  void firstKeyframeButtonClicked();
+  void lastKeyframeButtonClicked();
   void intensitySliderChanged(int& value);
 
   GradientStop* draggingStop;
@@ -45,6 +48,8 @@ public:
   ofxPanel gui;
   ofxGuiGroup globalGui;
   ofxButton clearGradientButton;
+  ofxButton firstKeyframeButton;
+  ofxButton lastKeyframeButton;
   ofxLabel keyframeLabel;
   ofxGuiGroup keyframeGui;
 

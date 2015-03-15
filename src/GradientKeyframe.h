@@ -1,7 +1,6 @@
 #pragma once
 
 #include "ofMain.h"
-#include "ofxGui.h"
 #include "GradientStop.h"
 
 #define GRADIENT_STOP_RADIUS 8
@@ -14,13 +13,9 @@ public:
   void setup(int w, int h);
   void draw();
 
-  void setGuiGroup(ofxGuiGroup*);
-
   GradientStop* addStop(string label, float posx, float posy, int intensity);
   GradientStop* addStop(string label, float posx, float posy, float dirx, float diry, int intensity);
-  void updateStopPos(int stopIndex, float x, float y);
-  void updateStopDir(int stopIndex, float x, float y);
-  void updateStopIntensity(int stopIndex, int intensity);
+  GradientStop* getStop(int stopIndex);
   int numStops();
   void clearStops();
 
@@ -33,8 +28,6 @@ private:
   int height;
 
   std::vector<GradientStop*> stops;
-
-  ofxGuiGroup* gui;
 
   void updateGradient(
       unsigned short int* pixelsDetail,
