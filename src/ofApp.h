@@ -2,8 +2,10 @@
 
 #include "ofMain.h"
 #include "ofxGui.h"
-#include "GradientStop.h"
+
+#include "GradientAnimation.h"
 #include "GradientKeyframe.h"
+#include "GradientStop.h"
 
 class ofApp : public ofBaseApp {
 public:
@@ -42,7 +44,7 @@ public:
 
   GradientStop* draggingStop;
 
-  std::vector<GradientKeyframe*> keyframes;
+  GradientAnimation animation;
   int currKeyframeIndex;
   GradientKeyframe* currKeyframe;
 

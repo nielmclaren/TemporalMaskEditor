@@ -70,7 +70,7 @@ void ofApp::draw() {
 
 void ofApp::exit() {
   clearFrames();
-  clearKeyframes();
+  animation.clearKeyframes();
 }
 
 void ofApp::updateOutputPixels() {
@@ -113,13 +113,6 @@ void ofApp::clearFrames() {
   frameToBrushColor = 0;
 }
 
-void ofApp::clearKeyframes() {
-  int numKeyframes = keyframes.size();
-  for (int i = 0; i < numKeyframes; i++) {
-    delete keyframes[i];
-  }
-}
-
 void ofApp::setKeyframe(int index) {
   int numStops;
 
@@ -132,7 +125,7 @@ void ofApp::setKeyframe(int index) {
   }
 
   currKeyframeIndex = index;
-  currKeyframe = keyframes[index];
+  currKeyframe = animation.getKeyframe(index);
   keyframeLabel = ofToString(index);
 
   keyframeGui.clear();
@@ -155,6 +148,8 @@ void ofApp::loadFrames(string path) {
   frameHeight = image.height;
   frameCount = countFrames(path);
 
+  animation.setup(frameWidth, frameHeight);
+
   cout << "Loading " << frameCount << " frames " << endl
     << "\tPath: " << path << endl
     << "\tDimensions: " << frameWidth << "x" << frameHeight << endl
@@ -176,15 +171,6 @@ void ofApp::loadFrames(string path) {
 
   clearMask();
 
-  GradientKeyframe* keyframe;
-
-  keyframe = new GradientKeyframe;
-  keyframe->setup(frameWidth, frameHeight);
-  keyframes.push_back(keyframe);
-
-  keyframe = new GradientKeyframe;
-  keyframe->setup(frameWidth, frameHeight);
-  keyframes.push_back(keyframe);
   setKeyframe(0);
 
   frameToBrushColor = 255 * 255 / (frameCount - 1);
@@ -199,31 +185,18 @@ void ofApp::clearMask() {
 }
 
 void ofApp::clearStops() {
-  int numKeyframes = keyframes.size();
-  for (int i = 0; i < numKeyframes; i++) {
-    GradientKeyframe* keyframe = keyframes[i];
-    keyframe->clearStops();
-  }
-
+  animation.clearStops();
   currKeyframe->updateGradient(maskPixelsDetail, maskPixels);
 
   keyframeGui.clear();
 }
 
 void ofApp::addStop(int x, int y) {
-  int numKeyframes = keyframes.size();
-  for (int i = 0; i < numKeyframes; i++) {
-    GradientKeyframe* keyframe = keyframes[i];
-    int numStops = keyframe->numStops();
-    GradientStop* stop = keyframe->addStop(
-        "stop " + ofToString(numStops), x, y,
-        numStops % 2 == 0 ? 0 : 65025);
+  animation.addStop(x, y);
 
-    if (i == currKeyframeIndex) {
-      keyframeGui.add(stop->intensity);
-      stop->intensity->addListener(this, &ofApp::intensitySliderChanged);
-    }
-  }
+  GradientStop* stop = currKeyframe->getStop(currKeyframe->numStops() - 1);
+  keyframeGui.add(stop->intensity);
+  stop->intensity->addListener(this, &ofApp::intensitySliderChanged);
 }
 
 void ofApp::keyPressed(int key) {
@@ -294,7 +267,7 @@ void ofApp::firstKeyframeButtonClicked() {
 }
 
 void ofApp::lastKeyframeButtonClicked() {
-  setKeyframe(keyframes.size() - 1);
+  setKeyframe(animation.numKeyframes() - 1);
 }
 
 void ofApp::intensitySliderChanged(int& value) {
