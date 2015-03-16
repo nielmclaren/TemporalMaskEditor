@@ -12,7 +12,9 @@ public:
   void draw();
   void exit();
 
+  void updateOutputPixels();
   void saveDistorted();
+
   int countFrames(string path);
   void clearFrames();
   void loadFrames(string path);

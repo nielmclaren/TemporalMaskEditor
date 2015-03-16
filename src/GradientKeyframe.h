@@ -19,6 +19,7 @@ public:
   int numStops();
   void clearStops();
 
+  void updateStopDirs();
   void updateGradient(unsigned short int* pixelsDetail, unsigned char* pixels);
 
   GradientStop* hitTestStops(int x, int y);

@@ -40,6 +40,8 @@ GradientStop* GradientKeyframe::addStop(string label, float posx, float posy, fl
   stop->intensity = slider;
 
   stops.push_back(stop);
+
+  updateStopDirs();
   return stop;
 }
 
@@ -59,15 +61,8 @@ void GradientKeyframe::clearStops() {
   stops.clear();
 }
 
-void GradientKeyframe::updateGradient(
-    unsigned short int* pixelsDetail,
-    unsigned char* pixels) {
+void GradientKeyframe::updateStopDirs() {
   int numStops = stops.size();
-  ofVec2f d;
-
-  for (int i = 0; i < width * height; i++) {
-    pixelsDetail[i] = pixels[i] = 0;
-  }
 
   for (int i = 0; i < numStops; i++) {
     stops[i]->dir.zero();
@@ -89,6 +84,19 @@ void GradientKeyframe::updateGradient(
 
     curr->dir.normalize();
   }
+}
+
+void GradientKeyframe::updateGradient(
+    unsigned short int* pixelsDetail,
+    unsigned char* pixels) {
+  int numStops = stops.size();
+  ofVec2f d;
+
+  for (int i = 0; i < width * height; i++) {
+    pixelsDetail[i] = pixels[i] = 0;
+  }
+
+  if (numStops < 2) return;
 
   for (int i = 0; i < numStops - 1; i++) {
     GradientStop* stop0 = stops[i];

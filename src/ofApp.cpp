@@ -38,8 +38,7 @@ void ofApp::setup() {
   loadFrames("shuttle_launch01");
 }
 
-void ofApp::update() {
-}
+void ofApp::update() {}
 
 void ofApp::draw() {
   ofBackground(0);
@@ -49,13 +48,7 @@ void ofApp::draw() {
       drawImage.setFromPixels(maskPixels, frameWidth, frameHeight, OF_IMAGE_GRAYSCALE);
     }
     else {
-      for (int i = 0; i < frameWidth * frameHeight; i++) {
-        int frameIndex = maskPixelsDetail[i] / frameToBrushColor;
-        for (int c = 0; c < 3; c++) {
-          outputPixels[i * 3 + c] = inputPixels[frameIndex * frameWidth * frameHeight * 3 + i * 3 + c];
-        }
-      }
-
+      updateOutputPixels();
       drawImage.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
     }
 
@@ -78,6 +71,15 @@ void ofApp::draw() {
 void ofApp::exit() {
   clearFrames();
   clearKeyframes();
+}
+
+void ofApp::updateOutputPixels() {
+  for (int i = 0; i < frameWidth * frameHeight; i++) {
+    int frameIndex = maskPixelsDetail[i] / frameToBrushColor;
+    for (int c = 0; c < 3; c++) {
+      outputPixels[i * 3 + c] = inputPixels[frameIndex * frameWidth * frameHeight * 3 + i * 3 + c];
+    }
+  }
 }
 
 void ofApp::saveDistorted() {
@@ -292,7 +294,7 @@ void ofApp::firstKeyframeButtonClicked() {
 }
 
 void ofApp::lastKeyframeButtonClicked() {
-  setKeyframe(1);
+  setKeyframe(keyframes.size() - 1);
 }
 
 void ofApp::intensitySliderChanged(int& value) {
