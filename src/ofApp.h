@@ -40,6 +40,7 @@ public:
   void clearGradientButtonClicked();
   void firstKeyframeButtonClicked();
   void lastKeyframeButtonClicked();
+  void frameSliderChanged(float& value);
   void intensitySliderChanged(int& value);
 
   GradientStop* draggingStop;
@@ -54,6 +55,7 @@ public:
   ofxButton clearGradientButton;
   ofxButton firstKeyframeButton;
   ofxButton lastKeyframeButton;
+  ofxFloatSlider frameSlider;
   ofxLabel keyframeLabel;
   ofxGuiGroup keyframeGui;
 

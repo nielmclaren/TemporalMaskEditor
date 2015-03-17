@@ -26,10 +26,12 @@ void ofApp::setup() {
   globalGui.add(clearGradientButton.setup("clear gradient (c)"));
   globalGui.add(firstKeyframeButton.setup("first keyframe"));
   globalGui.add(lastKeyframeButton.setup("last keyframe"));
+  globalGui.add(frameSlider.setup("frame", 0, 0, 1));
 
   clearGradientButton.addListener(this, &ofApp::clearGradientButtonClicked);
   firstKeyframeButton.addListener(this, &ofApp::firstKeyframeButtonClicked);
   lastKeyframeButton.addListener(this, &ofApp::lastKeyframeButtonClicked);
+  frameSlider.addListener(this, &ofApp::frameSliderChanged);
 
   globalGui.add(keyframeLabel.setup("current keyframe", "0", 200, 20));
 
@@ -60,7 +62,7 @@ void ofApp::draw() {
 
     ofNoFill();
     ofSetColor(0, 255, 0);
-    currKeyframe->draw();
+    animation.draw();
 
     ofPopMatrix();
   }
@@ -123,18 +125,23 @@ void ofApp::setKeyframe(int index) {
       stop->intensity->removeListener(this, &ofApp::intensitySliderChanged);
     }
   }
-
-  currKeyframeIndex = index;
-  currKeyframe = animation.getKeyframe(index);
-  keyframeLabel = ofToString(index);
-
   keyframeGui.clear();
 
-  numStops = currKeyframe->numStops();
-  for (int i = 0; i < numStops; i++) {
-    GradientStop* stop = currKeyframe->getStop(i);
-    stop->intensity->addListener(this, &ofApp::intensitySliderChanged);
-    keyframeGui.add(stop->intensity);
+  currKeyframeIndex = index;
+  if (index < 0) {
+    currKeyframe = NULL;
+    keyframeLabel = "none";
+  }
+  else {
+    currKeyframe = animation.getKeyframe(index);
+    keyframeLabel = ofToString(index);
+
+    numStops = currKeyframe->numStops();
+    for (int i = 0; i < numStops; i++) {
+      GradientStop* stop = currKeyframe->getStop(i);
+      stop->intensity->addListener(this, &ofApp::intensitySliderChanged);
+      keyframeGui.add(stop->intensity);
+    }
   }
 }
 
@@ -171,7 +178,7 @@ void ofApp::loadFrames(string path) {
 
   clearMask();
 
-  setKeyframe(0);
+  frameSlider = 0;
 
   frameToBrushColor = 255 * 255 / (frameCount - 1);
 
@@ -186,7 +193,9 @@ void ofApp::clearMask() {
 
 void ofApp::clearStops() {
   animation.clearStops();
-  currKeyframe->updateGradient(maskPixelsDetail, maskPixels);
+  if (currKeyframe) {
+    currKeyframe->render(maskPixelsDetail, maskPixels);
+  }
 
   keyframeGui.clear();
 }
@@ -194,9 +203,11 @@ void ofApp::clearStops() {
 void ofApp::addStop(int x, int y) {
   animation.addStop(x, y);
 
-  GradientStop* stop = currKeyframe->getStop(currKeyframe->numStops() - 1);
-  keyframeGui.add(stop->intensity);
-  stop->intensity->addListener(this, &ofApp::intensitySliderChanged);
+  if (currKeyframe) {
+    GradientStop* stop = currKeyframe->getStop(currKeyframe->numStops() - 1);
+    keyframeGui.add(stop->intensity);
+    stop->intensity->addListener(this, &ofApp::intensitySliderChanged);
+  }
 }
 
 void ofApp::keyPressed(int key) {
@@ -231,22 +242,26 @@ void ofApp::mouseDragged(int x, int y, int button) {
 void ofApp::mousePressed(int x, int y, int button) {
   draggingStop = NULL;
 
-  draggingStop = currKeyframe->hitTestStops(x - guiMargin, y);
+  if (currKeyframe) {
+    draggingStop = currKeyframe->hitTestStops(x - guiMargin, y);
+  }
 }
 
 void ofApp::mouseReleased(int x, int y, int button) {
-  if (draggingStop) {
-    draggingStop->pos.set(x - guiMargin, y);
-    draggingStop = NULL;
-  }
-  else {
-    addStop(x - guiMargin, y);
+  if (currKeyframe) {
+    if (draggingStop) {
+      draggingStop->pos.set(x - guiMargin, y);
+      draggingStop = NULL;
+    }
+    else {
+      addStop(x - guiMargin, y);
 
-    // NOTE: Seems to be a bug where keyframeGui doesn't update.
-    keyframeGui.registerMouseEvents();
-  }
+      // NOTE: Seems to be a bug where keyframeGui doesn't update.
+      keyframeGui.registerMouseEvents();
+    }
 
-  currKeyframe->updateGradient(maskPixelsDetail, maskPixels);
+    currKeyframe->render(maskPixelsDetail, maskPixels);
+  }
 }
 
 void ofApp::windowResized(int w, int h) {
@@ -263,14 +278,31 @@ void ofApp::clearGradientButtonClicked() {
 }
 
 void ofApp::firstKeyframeButtonClicked() {
-  setKeyframe(0);
+  frameSlider = 0;
 }
 
 void ofApp::lastKeyframeButtonClicked() {
-  setKeyframe(animation.numKeyframes() - 1);
+  frameSlider = 1;
+}
+
+void ofApp::frameSliderChanged(float& value) {
+  if (value == 0) {
+    setKeyframe(0);
+  }
+  else if (value == 1) {
+    setKeyframe(1);
+  }
+  else {
+    setKeyframe(-1);
+  }
+
+  animation.setTime(value);
+  animation.render(maskPixelsDetail, maskPixels);
 }
 
 void ofApp::intensitySliderChanged(int& value) {
-  currKeyframe->updateGradient(maskPixelsDetail, maskPixels);
+  if (currKeyframe) {
+    currKeyframe->render(maskPixelsDetail, maskPixels);
+  }
 }
 

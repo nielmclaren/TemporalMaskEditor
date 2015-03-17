@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		0307E6001AB733980036D990 /* GradientAnimation.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0307E5FE1AB733980036D990 /* GradientAnimation.cpp */; };
+		0307E6041AB879340036D990 /* GradientFrame.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0307E6021AB879340036D990 /* GradientFrame.cpp */; };
 		0320B35F1AB316EC007807C6 /* GradientKeyframe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 0320B35D1AB316EC007807C6 /* GradientKeyframe.cpp */; };
 		169D3C72FDE6C5590A1616F5 /* ofxCvFloatImage.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 7B6A03390302D5A2C9F0E4AB /* ofxCvFloatImage.cpp */; };
 		1CD33E884D9E3358252E82A1 /* ofxToggle.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 907C5B5E104864A2D3A25745 /* ofxToggle.cpp */; };
@@ -87,6 +88,8 @@
 		0307E5FE1AB733980036D990 /* GradientAnimation.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GradientAnimation.cpp; sourceTree = "<group>"; };
 		0307E5FF1AB733980036D990 /* GradientAnimation.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GradientAnimation.h; sourceTree = "<group>"; };
 		0307E6011AB7339E0036D990 /* GradientStop.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = GradientStop.h; sourceTree = "<group>"; };
+		0307E6021AB879340036D990 /* GradientFrame.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GradientFrame.cpp; sourceTree = "<group>"; };
+		0307E6031AB879340036D990 /* GradientFrame.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GradientFrame.h; sourceTree = "<group>"; };
 		0320B35D1AB316EC007807C6 /* GradientKeyframe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GradientKeyframe.cpp; sourceTree = "<group>"; };
 		0320B35E1AB316EC007807C6 /* GradientKeyframe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GradientKeyframe.h; sourceTree = "<group>"; };
 		057122A817D12571F8C0C7A4 /* ofxCvGrayscaleImage.cpp */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.cpp; fileEncoding = 30; name = ofxCvGrayscaleImage.cpp; path = ../../../addons/ofxOpenCv/src/ofxCvGrayscaleImage.cpp; sourceTree = SOURCE_ROOT; };
@@ -646,6 +649,8 @@
 				E4B69E1F0A3A1BDC003C02F2 /* ofApp.h */,
 				0307E5FE1AB733980036D990 /* GradientAnimation.cpp */,
 				0307E5FF1AB733980036D990 /* GradientAnimation.h */,
+				0307E6021AB879340036D990 /* GradientFrame.cpp */,
+				0307E6031AB879340036D990 /* GradientFrame.h */,
 				0320B35D1AB316EC007807C6 /* GradientKeyframe.cpp */,
 				0320B35E1AB316EC007807C6 /* GradientKeyframe.h */,
 				0307E6011AB7339E0036D990 /* GradientStop.h */,
@@ -769,6 +774,7 @@
 				B56FE57CC35806596D38118C /* ofxSliderGroup.cpp in Sources */,
 				0320B35F1AB316EC007807C6 /* GradientKeyframe.cpp in Sources */,
 				1CD33E884D9E3358252E82A1 /* ofxToggle.cpp in Sources */,
+				0307E6041AB879340036D990 /* GradientFrame.cpp in Sources */,
 				250A95BA26587BE85DB0A353 /* ofxCvColorImage.cpp in Sources */,
 				1D5F3298C2FA073628012944 /* ofxCvContourFinder.cpp in Sources */,
 				169D3C72FDE6C5590A1616F5 /* ofxCvFloatImage.cpp in Sources */,

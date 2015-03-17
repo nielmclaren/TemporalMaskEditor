@@ -3,7 +3,84 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "ofApp::setKeyframe(int):ofApp.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "animation.numKeyframes()">
+            </PersistentString>
+            <PersistentString
+               value = "currKeyframeIndex">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::loadFrames(std::string):ofApp.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "frameCount">
+            </PersistentString>
+            <PersistentString
+               value = "frameToBrushColor">
+            </PersistentString>
+            <PersistentString
+               value = "brushColor">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::addGradientStop(float, float, float, float, float):ofApp.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "stop.intensity">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::frameSliderChanged(float&amp;):ofApp.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "(float) value">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::mouseReleased(int, int, int):ofApp.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "draggingStop">
+            </PersistentString>
+            <PersistentString
+               value = "gradientStops[0].pos">
+            </PersistentString>
+            <PersistentString
+               value = "gradientStops[1].pos">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "ofApp::loadSettings():ofApp.cpp">
+      </ContextState>
+      <ContextState
          contextName = "ofApp::updateGradient(GradientStop, GradientStop):ofApp.cpp">
+      </ContextState>
+      <ContextState
+         contextName = "GradientAnimation::getInterpolatedStop(int, float):GradientAnimation.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "(int)last-&gt;intensity-&gt;value">
+            </PersistentString>
+            <PersistentString
+               value = "(int)first-&gt;intensity-&gt;value">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
+         contextName = "GradientAnimation::render(unsigned short*, unsigned char*):GradientAnimation.cpp">
+         <PersistentStrings>
+            <PersistentString
+               value = "currFrame">
+            </PersistentString>
+         </PersistentStrings>
       </ContextState>
       <ContextState
          contextName = "ofxGuiGroup::add(ofxBaseGui*):ofxGuiGroup.cpp">
@@ -14,41 +91,10 @@
          </PersistentStrings>
       </ContextState>
       <ContextState
-         contextName = "ofApp::loadSettings():ofApp.cpp">
-      </ContextState>
-      <ContextState
-         contextName = "ofApp::mouseReleased(int, int, int):ofApp.cpp">
+         contextName = "GradientFrame::~GradientFrame():GradientFrame.cpp">
          <PersistentStrings>
             <PersistentString
-               value = "gradientStops[0].pos">
-            </PersistentString>
-            <PersistentString
-               value = "gradientStops[1].pos">
-            </PersistentString>
-            <PersistentString
-               value = "draggingStop">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
-         contextName = "ofApp::loadFrames(std::string):ofApp.cpp">
-         <PersistentStrings>
-            <PersistentString
-               value = "frameToBrushColor">
-            </PersistentString>
-            <PersistentString
-               value = "brushColor">
-            </PersistentString>
-            <PersistentString
-               value = "frameCount">
-            </PersistentString>
-         </PersistentStrings>
-      </ContextState>
-      <ContextState
-         contextName = "ofApp::addGradientStop(float, float, float, float, float):ofApp.cpp">
-         <PersistentStrings>
-            <PersistentString
-               value = "stop.intensity">
+               value = "numStops">
             </PersistentString>
          </PersistentStrings>
       </ContextState>
