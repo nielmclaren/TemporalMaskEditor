@@ -10,6 +10,8 @@
 	<string>TemporalMaskEditor</string>
 	<key>IDESourceControlProjectOriginsDictionary</key>
 	<dict>
+		<key>720EC1C5A24B18D8D1B75012AAF3CC3FB49CF9C7</key>
+		<string>github.com:jesusgollonet/ofxGifEncoder.git</string>
 		<key>FCA126697754C460B065FB9D5610152CD53B2C19</key>
 		<string>github.com:danielgm/TemporalMaskEditor.git</string>
 	</dict>
@@ -17,6 +19,8 @@
 	<string>TemporalMaskEditor.xcodeproj</string>
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
+		<key>720EC1C5A24B18D8D1B75012AAF3CC3FB49CF9C7</key>
+		<string>../../../../../addons/ofxGifEncoder</string>
 		<key>FCA126697754C460B065FB9D5610152CD53B2C19</key>
 		<string>../..</string>
 	</dict>
@@ -28,6 +32,14 @@
 	<string>FCA126697754C460B065FB9D5610152CD53B2C19</string>
 	<key>IDESourceControlProjectWCConfigurations</key>
 	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>720EC1C5A24B18D8D1B75012AAF3CC3FB49CF9C7</string>
+			<key>IDESourceControlWCCName</key>
+			<string>ofxGifEncoder</string>
+		</dict>
 		<dict>
 			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
 			<string>public.vcs.git</string>

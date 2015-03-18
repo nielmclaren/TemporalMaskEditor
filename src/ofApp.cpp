@@ -85,9 +85,30 @@ void ofApp::updateOutputPixels() {
 }
 
 void ofApp::saveDistorted() {
+  cout << "Writing frame... ";
+
   ofImage distorted;
   distorted.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
-  distorted.saveImage("render.jpg", OF_IMAGE_QUALITY_BEST);
+  distorted.saveImage("render.tif", OF_IMAGE_QUALITY_BEST);
+
+  cout << "done." << endl;
+}
+
+void ofApp::saveDistortedAnimation() {
+  cout << "Writing animation... ";
+
+  ofImage distorted;
+  int numFrames = 25;
+  for (int i = 0; i < numFrames; i++) {
+    float t = (float)i / numFrames;
+    animation.setTime(t);
+    animation.render(maskPixelsDetail, maskPixels);
+    updateOutputPixels();
+    distorted.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
+    distorted.saveImage("output/output/render" + ofToString(i, 4, '0') + ".gif", OF_IMAGE_QUALITY_BEST);
+  }
+
+  cout << "done." << endl;
 }
 
 int ofApp::countFrames(string path) {
@@ -226,6 +247,10 @@ void ofApp::keyReleased(int key) {
       saveDistorted();
       break;
 
+    case 'e':
+      saveDistortedAnimation();
+      break;
+
     case 'c':
       clearStops();
       break;
@@ -262,6 +287,7 @@ void ofApp::mouseReleased(int x, int y, int button) {
     if (draggingStop) {
       draggingStop->pos.set(x - guiMargin, y);
       draggingStop = NULL;
+      currKeyframe->updateStopDirs();
     }
     else {
       addStop(x - guiMargin, y);

@@ -19,16 +19,11 @@ public:
   GradientStop* getStop(int stopIndex);
   int numStops();
   void clearStops();
+  void updateStopDirs();
 
   GradientStop* hitTestStops(int x, int y);
 
 protected:
-  int width;
-  int height;
-
-  std::vector<GradientStop*> stops;
-
-  void updateStopDirs();
   void updateGradient(
       unsigned short int* pixelsDetail,
       unsigned char* pixels,
@@ -37,5 +32,10 @@ protected:
 
   int findIntersection(float, float, float, float, float, float, float, float, ofVec2f*);
   bool hitTestStop(GradientStop* stop, ofVec2f* test);
+
+  int width;
+  int height;
+
+  std::vector<GradientStop*> stops;
 };
 

@@ -16,6 +16,7 @@ public:
 
   void updateOutputPixels();
   void saveDistorted();
+  void saveDistortedAnimation();
 
   int countFrames(string path);
   void clearFrames();

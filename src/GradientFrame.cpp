@@ -106,6 +106,23 @@ void GradientFrame::updateStopDirs() {
   }
 }
 
+GradientStop* GradientFrame::hitTestStops(int x, int y) {
+  ofVec2f mouse(x, y);
+
+  int numStops = stops.size();
+  for (int i = 0; i < numStops; i++) {
+    GradientStop* stop = stops[i];
+    if (hitTestStop(stop, &mouse)) {
+      return stops[i];
+    }
+  }
+  return NULL;
+}
+
+bool GradientFrame::hitTestStop(GradientStop* stop, ofVec2f* test) {
+  return (*(test) - stop->pos).length() < GRADIENT_STOP_RADIUS;
+}
+
 void GradientFrame::updateGradient(
     unsigned short int* pixelsDetail,
     unsigned char* pixels,
@@ -158,23 +175,6 @@ void GradientFrame::updateGradient(
       pixels[i] = pixelsDetail[i] / 255;
     }
   }
-}
-
-GradientStop* GradientFrame::hitTestStops(int x, int y) {
-  ofVec2f mouse(x, y);
-
-  int numStops = stops.size();
-  for (int i = 0; i < numStops; i++) {
-    GradientStop* stop = stops[i];
-    if (hitTestStop(stop, &mouse)) {
-      return stops[i];
-    }
-  }
-  return NULL;
-}
-
-bool GradientFrame::hitTestStop(GradientStop* stop, ofVec2f* test) {
-  return (*(test) - stop->pos).length() < GRADIENT_STOP_RADIUS;
 }
 
 /**
