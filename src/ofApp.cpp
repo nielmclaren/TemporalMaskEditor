@@ -210,13 +210,19 @@ void ofApp::addStop(int x, int y) {
   }
 }
 
+void ofApp::incrementFrame() {
+  int numFrames = 10;
+  int i = floor(frameSlider * numFrames) + 1;
+  if (i >= numFrames) i = 0;
+  frameSlider = (float)i / numFrames;
+}
+
 void ofApp::keyPressed(int key) {
 }
 
 void ofApp::keyReleased(int key) {
   switch (key) {
     case 'r':
-    case ' ':
       saveDistorted();
       break;
 
@@ -226,6 +232,10 @@ void ofApp::keyReleased(int key) {
 
     case 't':
       showMask = !showMask;
+      break;
+
+    case ' ':
+      incrementFrame();
       break;
   }
 }
