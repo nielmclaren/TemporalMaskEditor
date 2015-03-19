@@ -10,6 +10,10 @@ public:
     currIndex = getFirstIndex();
   }
 
+  FileNamer(string _prefix, string _extension) {
+    setup(_prefix, _extension);
+  }
+
   void setup(string _prefix, string _extension) {
     prefix = _prefix;
     extension = _extension;
