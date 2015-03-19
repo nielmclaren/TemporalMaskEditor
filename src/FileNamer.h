@@ -5,24 +5,22 @@
 class FileNamer {
 public:
   FileNamer() {
-    initialized = false;
+    prefix = "export";
+    extension = "";
+    currIndex = getFirstIndex();
   }
 
   void setup(string _prefix, string _extension) {
-    currIndex = 0;
     prefix = _prefix;
     extension = _extension;
-    initialized = true;
+    currIndex = getFirstIndex();
   }
 
   string curr() {
-    if (!verifyInitialized()) return;
     return getFilename(currIndex);
   }
 
   string next() {
-    if (!verifyInitialized()) return;
-
     ofFile file;
     while (file.doesFileExist(getFilename(currIndex)) && currIndex < 1000) {
       currIndex++;
@@ -31,16 +29,17 @@ public:
   }
 
 private:
-  bool initialized;
-  int currIndex;
   string prefix;
   string extension;
+  int currIndex;
 
-  bool verifyInitialized() {
-    if (!initialized) {
-      cout << "Not initialized. Call setup() first." << endl;
+  int getFirstIndex() {
+    ofFile file;
+    int i = 1000;
+    while (!file.doesFileExist(getFilename(i)) && i > 0) {
+      i--;
     }
-    return initialized;
+    return i;
   }
 
   string getFilename(int n) {
