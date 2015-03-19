@@ -3,6 +3,7 @@
 #include "ofMain.h"
 #include "ofxGui.h"
 
+#include "FileNamer.h"
 #include "GradientAnimation.h"
 #include "GradientKeyframe.h"
 #include "GradientStop.h"
@@ -45,6 +46,8 @@ public:
   void lastKeyframeButtonClicked();
   void frameSliderChanged(float& value);
   void intensitySliderChanged(int& value);
+
+  FileNamer folderNamer;
 
   GradientStop* draggingStop;
 

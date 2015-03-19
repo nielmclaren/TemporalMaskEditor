@@ -37,6 +37,8 @@ void ofApp::setup() {
 
   gui.add(keyframeGui.setup());
 
+  folderNamer.setup("output/output", "/");
+
   loadFrames("shuttle_launch01");
 }
 
@@ -97,6 +99,7 @@ void ofApp::saveDistorted() {
 void ofApp::saveDistortedAnimation() {
   cout << "Writing animation... ";
 
+  string folderName = folderNamer.next();
   ofImage distorted;
   int numFrames = 25;
   for (int i = 0; i < numFrames; i++) {
@@ -105,7 +108,7 @@ void ofApp::saveDistortedAnimation() {
     animation.render(maskPixelsDetail, maskPixels);
     updateOutputPixels();
     distorted.setFromPixels(outputPixels, frameWidth, frameHeight, OF_IMAGE_COLOR);
-    distorted.saveImage("output/output/render" + ofToString(i, 4, '0') + ".gif", OF_IMAGE_QUALITY_BEST);
+    distorted.saveImage(folderName + "/render" + ofToString(i, 4, '0') + ".gif", OF_IMAGE_QUALITY_BEST);
   }
 
   cout << "done." << endl;

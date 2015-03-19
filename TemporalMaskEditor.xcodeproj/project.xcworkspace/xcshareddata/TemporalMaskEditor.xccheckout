@@ -20,7 +20,7 @@
 	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
 	<dict>
 		<key>720EC1C5A24B18D8D1B75012AAF3CC3FB49CF9C7</key>
-		<string>../../../../../addons/ofxGifEncoder</string>
+		<string>../../../addons/ofxGifEncoder</string>
 		<key>FCA126697754C460B065FB9D5610152CD53B2C19</key>
 		<string>../..</string>
 	</dict>
