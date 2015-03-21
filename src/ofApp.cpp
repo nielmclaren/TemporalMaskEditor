@@ -237,7 +237,7 @@ void ofApp::addStop(int x, int y) {
 void ofApp::incrementFrame() {
   int numFrames = 10;
   int i = floor(frameSlider * numFrames) + 1;
-  if (i >= numFrames) i = 0;
+  if (i > numFrames) i = 0;
   frameSlider = (float)i / numFrames;
 }
 
